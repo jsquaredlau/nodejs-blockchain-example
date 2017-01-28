@@ -2,3 +2,4 @@ build
 node_modules
 app/**/*.map
 app/.baseDir.ts
+.idea
