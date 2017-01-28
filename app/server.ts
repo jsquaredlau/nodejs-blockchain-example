@@ -1,3 +1,4 @@
+// Copyright BASYX.lab
 /* app/server.ts */
 
 // Import everything from express and assign it to the express variable
