@@ -34,17 +34,50 @@ module.exports = function(grunt) {
                     spawn: false // makes the watch task faster
                 }
             }
+        },
+        nodemon: {
+            dev: {
+                script: 'build/server.js'
+            },
+            options: {
+                ignore: ['node_modules/**', 'Gruntfile.js'],
+                env: {
+                    PORT: '3000'
+                }
+            }
+        },
+        concurrent: {
+            watchers: {
+                tasks: ['nodemon', 'watch'],
+                options: {
+                    logConcurrentOutput: true
+                }
+            }
         }
     });
 
+    // Compile typescript
     grunt.loadNpmTasks("grunt-ts");
 
+    // Lint typescript
     grunt.loadNpmTasks("grunt-tslint");
 
+
+    // Watch for file (.ts) changes
     grunt.loadNpmTasks("grunt-contrib-watch");
 
+    // Only recompile .ts files that have changed
     grunt.loadNpmTasks("grunt-newer");
+
+    // Restart server on file (.js) changes
+    grunt.loadNpmTasks("grunt-nodemon");
+
+    // Nodemon and grunt watch will block each other by themselves, this will handle that
+    grunt.loadNpmTasks("grunt-concurrent");
 
     // Default tasks.
     grunt.registerTask('default', ["tslint:all", "ts:build"]);
+
+    // grunt-concurrent will administer the running of nodemon and grunt watch
+    grunt.registerTask("serve", ["concurrent:watchers"]);
 };

@@ -1,8 +1,19 @@
 // Copyright BASYX.lab
 /* app/controllers/welcomeController.ts */
 
-// Import only what we need from express
+// MODULE IMPORTS
 import { Router, Request, Response } from 'express';
+import { cleanContract } from '../services';
+
+// LIBRARY IMPORTS
+const Web3 = require('web3');
+const solc = require('solc');
+const read = require('read-file');
+const path = require('path')
+
+// LIBRARY SETUP
+const web3 = new Web3();
+web3.setProvider(new web3.providers.HttpProvider('http://13.54.104.236:8545'));
 
 // Assign router to the express.Router() instance
 const router: Router = Router();
@@ -12,7 +23,9 @@ const router: Router = Router();
 // In this case it's /welcome
 router.get('/', (req: Request, res: Response) => {
     // Reply with a hello world when no name param is provided
-    res.send('Hello, World BITCHES!');
+    read(path.join(path.resolve(), 'app', 'contracts') + '/helloWorld.sol', 'utf8', function(err, contract) {
+        res.send(cleanContract(contract));
+    });
 });
 
 router.get('/:name', (req: Request, res: Response) => {
