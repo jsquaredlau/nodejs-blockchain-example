@@ -15,20 +15,23 @@ const objectValues = require('object-values');
 
 // LIBRARY SETUP
 const web3 = new Web3();
-web3.setProvider(new web3.providers.HttpProvider('http://13.54.104.236:8545'));
+web3.setProvider(new web3.providers.HttpProvider('http://localhost:8545'));
 
 // Assign router to the express.Router() instance
 const router: Router = Router();
+
+let contractAddress = '';
 
 // The / here corresponds to the route that the WelcomeController
 // is mounted on in the server.ts file.
 // In this case it's /welcome
 router.get('/', (req: Request, res: Response) => {
     // Reply with a hello world when no name param is provided
+    console.log(web3.eth.accounts);
     read(path.join(path.resolve(), 'app', 'contracts') + '/helloWorld.sol', 'utf8', function(err, contractSrc) {
         contractSrc = cleanContract(contractSrc);
-        const output = solc.compile(contractSrc, 1);
-        console.log(JSON.stringify(output, null, 2))
+        // const output = solc.compile(contractSrc, 1);
+        // console.log(JSON.stringify(output, null, 2))
         // create a new factory
         const factory = new ContractFactory({
             web3: web3,
@@ -50,6 +53,8 @@ router.get('/', (req: Request, res: Response) => {
         contract.deploy()
             .then((contractInstance) => {
                 console.log("Contract deployed at address : " + contractInstance.address);
+                // console.log(contractInstance);
+                contractAddress = contractInstance.address;
             })
             .catch(console.error);
 
@@ -69,8 +74,19 @@ router.get('/', (req: Request, res: Response) => {
 router.get('/:name', (req: Request, res: Response) => {
     // Extract the name from the request parameters
     const { name } = req.params;
+    if (contractAddress !== '') {
+        console.log(web3.eth.syncing);
+        const contractSrc = read.sync(path.join(path.resolve(), 'app', 'contracts') + '/helloWorld.sol', 'utf8');
+        const output = solc.compile(contractSrc, 1);
+        const abi = JSON.parse(output.contracts.greeter.interface);
+        const MyContract = web3.eth.contract(abi);
+        const myContractInstance = MyContract.at(contractAddress);
+        console.log(myContractInstance);
+        // Greet the given name
 
-    // Greet the given name
+        console.log(myContractInstance.greet());
+    }
+
     res.send(`Hello, ${name}`);
 });
 
