@@ -28,6 +28,31 @@ let contractAddress = '';
 router.get('/', (req: Request, res: Response) => {
     // Reply with a hello world when no name param is provided
     console.log(web3.eth.accounts);
+    // var greeterSource = 'contract mortal { address owner; function mortal() { owner = msg.sender; } \
+    //   function kill() { if (msg.sender == owner) suicide(owner); } } contract greeter is mortal \
+    //   { string greeting; function greeter(string _greeting) public { greeting = _greeting; } \
+    //   function greet() constant returns (string) { return greeting; } }'
+    //
+    // var greeterCompiled = solc.compile(greeterSource, 1);;
+    // var _greeting = "Hello World!"
+    // var greeterContract = web3.eth.contract(JSON.parse(greeterCompiled.contracts.greeter.interface));
+    //
+    // var greeter = greeterContract.new(_greeting,
+    //     { from: web3.eth.accounts[0], data: greeterCompiled.contracts.greeter.bytecode, gas: 1000000 },
+    //     function(e, contract) {
+    //         if (!e) {
+    //
+    //             if (!contract.address) {
+    //                 console.log("Contract transaction send: TransactionHash: " + contract.transactionHash + " waiting to be mined...");
+    //
+    //             } else {
+    //                 console.log("Contract mined! Address: " + contract.address);
+    //                 contractAddress = contract.address;
+    //                 console.log(contract);
+    //             }
+    //
+    //         }
+    //     })
     read(path.join(path.resolve(), 'app', 'contracts') + '/helloWorld.sol', 'utf8', function(err, contractSrc) {
         contractSrc = cleanContract(contractSrc);
         // const output = solc.compile(contractSrc, 1);
@@ -50,7 +75,7 @@ router.get('/', (req: Request, res: Response) => {
         });
 
         // Deploy it!
-        contract.deploy()
+        contract.deploy({ _greeting: 'hola world!' })
             .then((contractInstance) => {
                 console.log("Contract deployed at address : " + contractInstance.address);
                 // console.log(contractInstance);
@@ -84,7 +109,12 @@ router.get('/:name', (req: Request, res: Response) => {
         console.log(myContractInstance);
         // Greet the given name
 
-        console.log(myContractInstance.greet());
+        const test = {
+            from: web3.eth.coinbase,
+            gas: 3000000
+        }
+        console.log(myContractInstance.greet.call());
+        // console.log(myContractInstance.greet.call(test));
     }
 
     res.send(`Hello, ${name}`);

@@ -5,7 +5,7 @@ module.exports = function(grunt) {
 
         ts: {
             build: {
-                src: ["app/server.ts", "!node_modules/**/*.ts"],
+                src: ['app/server.ts', '!node_modules/**/*.ts'],
                 dest: 'build',
                 // Avoid compiling TypeScript files in node_modules
                 options: {
@@ -19,17 +19,17 @@ module.exports = function(grunt) {
         },
         tslint: {
             options: {
-                configuration: grunt.file.readJSON("tslint.json")
+                configuration: grunt.file.readJSON('tslint.json')
             },
             all: {
-                src: ["app/**/*.ts", "!node_modules/**/*.ts", "!obj/**/*.ts", "!typings/**/*.ts"]
+                src: ['app/**/*.ts', '!node_modules/**/*.ts', '!obj/**/*.ts', '!typings/**/*.ts']
                 // avoid linting typings files and node_modules files
             }
         },
         watch: {
             scripts: {
                 files: ['app/**/*.ts', '!node_modules/**/*.ts'], // the watched files
-                tasks: ["newer:tslint:all", "ts:build"], // the task to run
+                tasks: ['newer:tslint:all', 'ts:build'], // the task to run
                 options: {
                     spawn: false // makes the watch task faster
                 }
@@ -56,28 +56,32 @@ module.exports = function(grunt) {
         }
     });
 
+    ///// GRUNT LIBRARIES /////
     // Compile typescript
-    grunt.loadNpmTasks("grunt-ts");
+    grunt.loadNpmTasks('grunt-ts');
 
     // Lint typescript
-    grunt.loadNpmTasks("grunt-tslint");
-
+    grunt.loadNpmTasks('grunt-tslint');
 
     // Watch for file (.ts) changes
-    grunt.loadNpmTasks("grunt-contrib-watch");
+    grunt.loadNpmTasks('grunt-contrib-watch');
 
     // Only recompile .ts files that have changed
-    grunt.loadNpmTasks("grunt-newer");
+    grunt.loadNpmTasks('grunt-newer');
 
     // Restart server on file (.js) changes
-    grunt.loadNpmTasks("grunt-nodemon");
+    grunt.loadNpmTasks('grunt-nodemon');
 
     // Nodemon and grunt watch will block each other by themselves, this will handle that
-    grunt.loadNpmTasks("grunt-concurrent");
+    grunt.loadNpmTasks('grunt-concurrent');
 
+
+    ///// GRUNT COMMANDS /////
     // Default tasks.
-    grunt.registerTask('default', ["tslint:all", "ts:build"]);
+    grunt.registerTask('default', ['tslint:all', 'ts:build']);
+
+    grunt.registerTask('build', ['tslint:all', 'ts:build', 'concurrent:watchers']);
 
     // grunt-concurrent will administer the running of nodemon and grunt watch
-    grunt.registerTask("serve", ["concurrent:watchers"]);
+    grunt.registerTask('serve', ['concurrent:watchers']);
 };
