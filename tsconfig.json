@@ -1,4 +1,7 @@
 {
+    "atom": {
+        "rewriteTsconfig": true
+    },
     "compilerOptions": {
         "module": "commonjs",
         "target": "es5",
@@ -9,5 +12,17 @@
     "compileOnSave": false,
     "exclude": [
         "node_modules"
+    ],
+    "filesGlob": [
+        "**/*.ts",
+        "**/*.tsx",
+        "!node_modules/**"
+    ],
+    "files": [
+        "app/controllers/index.ts",
+        "app/controllers/welcomeController.ts",
+        "app/server.ts",
+        "app/services/index.ts",
+        "app/services/solidityOps.ts"
     ]
 }
