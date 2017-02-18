@@ -35,25 +35,33 @@ let contractAddress = '';
 // is mounted on in the server.ts file.
 // In this case it's /welcome
 router.get('/', (req: Request, res: Response) => {
+    console.log('FIRST');
+    console.log(req.route);
     // Reply with a hello world when no name param is provided
     console.log(web3.eth.accounts);
-    var greeterSource = 'contract mortal { address owner; function mortal() { owner = msg.sender; } \
+    // const contractSrc = read.sync(path.join(path.resolve(), 'app', 'contracts') + '/helloWorld.sol', 'utf8');
+    console.log(1);
+    // const output = solc.compile(contractSrc, 1);
+    var contractSrc = 'contract mortal { address owner; function mortal() { owner = msg.sender; } \
       function kill() { if (msg.sender == owner) suicide(owner); } } contract greeter is mortal \
       { string greeting; function greeter(string _greeting) public { greeting = _greeting; } \
       function greet() constant returns (string) { return greeting; } }'
 
-    var greeterCompiled = solc.compile(greeterSource, 1);;
+    var greeterCompiled = solc.compile(contractSrc, 1);
+    console.log(2);
     var _greeting = "Hello World!"
+    console.log(3);
     var greeterContract = web3.eth.contract(JSON.parse(greeterCompiled.contracts.greeter.interface));
-
+    console.log(4);
     var greeter = greeterContract.new(_greeting,
         { from: web3.eth.accounts[0], data: greeterCompiled.contracts.greeter.bytecode, gas: 1000000 },
         function(e, contract) {
+            console.log(5);
             if (!e) {
 
                 if (!contract.address) {
                     console.log("Contract transaction send: TransactionHash: " + contract.transactionHash + " waiting to be mined...");
-
+                    console.log(6);
                 } else {
                     console.log("Contract mined! Address: " + contract.address);
                     database.ref('contract/' + 'greeterContracts/' + contract.address).set({
@@ -110,18 +118,18 @@ router.get('/', (req: Request, res: Response) => {
     //     });
 });
 
-router.get('/:name', (req: Request, res: Response) => {
+router.get('/api/:name', (req: Request, res: Response) => {
     // Extract the name from the request parameters
     const { name } = req.params;
-
+    console.log('SECOND');
+    console.log(req.route);
     if (contractAddress !== '') {
-        console.log(web3.eth.syncing);
         const contractSrc = read.sync(path.join(path.resolve(), 'app', 'contracts') + '/helloWorld.sol', 'utf8');
         const output = solc.compile(contractSrc, 1);
         const abi = JSON.parse(output.contracts.greeter.interface);
         const MyContract = web3.eth.contract(abi);
         const myContractInstance = MyContract.at(contractAddress);
-        console.log(myContractInstance);
+        // console.log(myContractInstance);
         // Greet the given name
 
         const test = {
