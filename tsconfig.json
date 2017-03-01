@@ -22,6 +22,7 @@
         "app/controllers/index.ts",
         "app/controllers/welcomeController.ts",
         "app/server.ts",
+        "app/services/firebaseServices.ts",
         "app/services/index.ts",
         "app/services/solidityOps.ts"
     ]
