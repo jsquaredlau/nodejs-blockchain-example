@@ -31,100 +31,74 @@ let contractAddress = '';
 
 //ROUTES
 router.get('/', (req: Request, res: Response) => {
-    // console.log(web3.eth.accounts);
-    // const contractSrc = read.sync(path.join(path.resolve(), 'app', 'contracts') + '/helloWorld.sol', 'utf8');
-    // const output = solc.compile(contractSrc, 1);
-    // // var contractSrc = 'contract mortal { address owner; function mortal() { owner = msg.sender; } \
-    // //   function kill() { if (msg.sender == owner) suicide(owner); } } contract greeter is mortal \
-    // //   { string greeting; function greeter(string _greeting) public { greeting = _greeting; } \
-    // //   function greet() constant returns (string) { return greeting; } }'
-    //
-    // var greeterCompiled = solc.compile(contractSrc, 1);
-    // var _greeting = "Hello World!"
-    // var greeterContract = web3.eth.contract(JSON.parse(greeterCompiled.contracts.greeter.interface));
-    // var greeter = greeterContract.new(_greeting,
-    //     { from: web3.eth.accounts[0], data: greeterCompiled.contracts.greeter.bytecode, gas: 1000000 },
-    //     function(e, contract) {
-    //         console.log(5);
-    //         if (!e) {
-    //
-    //             if (!contract.address) {
-    //                 console.log("Contract transaction send: TransactionHash: " + contract.transactionHash + " waiting to be mined...");
-    //             } else {
-    //                 console.log("Contract mined! Address: " + contract.address);
-    //                 database.ref('contract/' + 'greeterContracts/' + contract.address).set({
-    //                     timestamp: Date.now() / 1000 | 0
-    //                 });
-    //                 contractAddress = contract.address;
-    //                 // console.log(contract);
-    //             }
-    //
-    //         }
-    //     })
-
     res.send('Welcome to contract deployment!');
 });
 
-router.get('/greeter/deploy', (req: Request, res: Response) => {
-    const contractSrc = read.sync(path.join(path.resolve(), 'app', 'contracts') + '/helloWorld.sol', 'utf8');
-    const output = solc.compile(contractSrc, 1);
-    // var contractSrc = 'contract mortal { address owner; function mortal() { owner = msg.sender; } \
-    //   function kill() { if (msg.sender == owner) suicide(owner); } } contract greeter is mortal \
-    //   { string greeting; function greeter(string _greeting) public { greeting = _greeting; } \
-    //   function greet() constant returns (string) { return greeting; } }'
-
-    var greeterCompiled = solc.compile(contractSrc, 1);
-    var _greeting = "Hello World!"
-    var greeterContract = web3.eth.contract(JSON.parse(greeterCompiled.contracts.greeter.interface));
-    var greeter = greeterContract.new(_greeting,
-        { from: web3.eth.accounts[0], data: greeterCompiled.contracts.greeter.bytecode, gas: 1000000 },
-        function(e, contract) {
-            console.log(5);
-            if (!e) {
-
-                if (!contract.address) {
-                    console.log("Contract transaction send: TransactionHash: " + contract.transactionHash + " waiting to be mined...");
-                } else {
-                    console.log("Contract mined! Address: " + contract.address);
-                    database.ref('contract/' + 'greeterContracts/' + contract.address).set({
-                        timestamp: Date.now() / 1000 | 0
-                    });
-                    contractAddress = contract.address;
-                    // console.log(contract);
-                }
-
-            }
-        })
-
-    res.send('Greeter Contract Deployed!');
-});
-
-router.get('/greeter/greet', (req: Request, res: Response) => {
-    const { name } = req.params;
-    if (contractAddress !== '') {
+router.get('/greeter/deploy/:schemeName', (req: Request, res: Response) => {
+    const { schemeName } = req.params;
+    if (schemeName !== null) {
         const contractSrc = read.sync(path.join(path.resolve(), 'app', 'contracts') + '/helloWorld.sol', 'utf8');
         const output = solc.compile(contractSrc, 1);
-        const abi = JSON.parse(output.contracts.greeter.interface);
-        const MyContract = web3.eth.contract(abi);
-        const myContractInstance = MyContract.at(contractAddress);
+
+        var greeterCompiled = solc.compile(contractSrc, 1);
+        var _greeting = "Hello World!"
+        var greeterContract = web3.eth.contract(JSON.parse(greeterCompiled.contracts.greeter.interface));
+        var greeter = greeterContract.new(_greeting,
+            { from: web3.eth.accounts[0], data: greeterCompiled.contracts.greeter.bytecode, gas: 1000000 },
+            function(e, contract) {
+                if (!e) {
+                    if (!contract.address) {
+                        console.log("Contract transaction send: TransactionHash: " + contract.transactionHash + " waiting to be mined...");
+                    } else {
+                        console.log("Contract mined! Address: " + contract.address);
+                        database.ref('programs/' + 'BASYXlab/' + schemeName).set({
+                            contractType: 'HelloWorld',
+                            contractAddress: contract.address,
+                            timestamp: Date.now() / 1000 | 0,
+                            origin: 'LaaS-1'
+                        });
+                        database.ref('businesses/' + 'BASYXlab/' + schemeName).set({
+                            partners: null,
+                            description: 'A hello world contract',
+                            endDate: null,
+                            startDatte: Date.now() / 1000 | 0
+                        });
+                        contractAddress = contract.address;
+                    }
+
+                }
+            })
+
+        res.send('Greeter Contract Deployed!');
+    } else {
+        res.send('Specify Scheme Name Please');
+    }
+});
+
+router.get('/greeter/greet/:schemeName', (req: Request, res: Response) => {
+    const { schemeName } = req.params;
+    const contractSrc = read.sync(path.join(path.resolve(), 'app', 'contracts') + '/helloWorld.sol', 'utf8');
+    const output = solc.compile(contractSrc, 1);
+    const abi = JSON.parse(output.contracts.greeter.interface);
+    const MyContract = web3.eth.contract(abi);
+
+    firebase.database().ref('programs/' + 'BASYXlab/' + schemeName).once('value').then(function(snapshot) {
+        var contract = snapshot.val().address;
+        const myContractInstance = MyContract.at(contract);
 
         const test = {
             from: web3.eth.coinbase,
             gas: 3000000
         }
 
-        if (name === 'die') {
-            console.log(myContractInstance.kill.sendTransaction(test));
-            database.ref('contract/' + 'greeterContracts/' + contractAddress).remove();
-        } else {
-            console.log(myContractInstance.greet.call());
-        }
-    }
+        console.log(myContractInstance.greet.call());
 
-    res.send(`Hello, ${name}`);
+        res.send(`Hello, ${name}`);
+    });
 });
 
-router.get('/greeter/kill', (req: Request, res: Response) => {
+router.get('/greeter/kill/:schemeName', (req: Request, res: Response) => {
+    const { schemeName } = req.params;
     const contractSrc = read.sync(path.join(path.resolve(), 'app', 'contracts') + '/helloWorld.sol', 'utf8');
     const output = solc.compile(contractSrc, 1);
     const abi = JSON.parse(output.contracts.greeter.interface);
@@ -137,7 +111,8 @@ router.get('/greeter/kill', (req: Request, res: Response) => {
     }
 
     console.log(myContractInstance.kill.sendTransaction(test));
-    database.ref('contract/' + 'greeterContracts/' + contractAddress).remove();
+    database.ref('businesses/' + 'BASYXlab/' + schemeName).remove();
+    database.ref('programs/' + 'BASYXlab/' + schemeName).remove();
 
     res.send('Greeter Contract Killed');
 });
