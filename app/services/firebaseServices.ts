@@ -1,5 +1,6 @@
 // Copyright BASYX.lab
 import * as firebase from "firebase";
+import * as Q from 'q';
 
 const config = {
     apiKey: "AIzaSyBQNNPknNbL21FqtJLDbZpd9DvC3Nqudnk",
@@ -28,7 +29,28 @@ export function saveDeployedContract(schemeName: string, contractAddress: number
 }
 
 export function retrieveDeployedContract(schemeName: string): any {
-    firebase.database().ref('programs/' + 'BASYXlab/' + schemeName).once('value').then(function(snapshot) {
-        return snapshot.val();
+    return Q.Promise((resolve, reject, notify) => {
+        firebase.database().ref('programs/' + 'BASYXlab/').once('value')
+            .then(function(snapshot) {
+                resolve(snapshot.val());
+            }, function(error) {
+                reject(new Error('Contract detail retrieval failed'));
+            });
+    });
+}
+
+export function removeFirebaseDeployedContract(schemeName: string): any {
+    return Q.Promise((resolve, reject, notify) => {
+        database.ref('businesses/' + 'BASYXlab/' + schemeName).remove().then(() => {
+            console.log('deleted first one');
+            database.ref('programs/' + 'BASYXlab/' + schemeName).remove().then(() => {
+                console.log('deleted both');
+                resolve(true);
+            }, () => {
+                reject(new Error('Failed to delete contract from programs'));
+            });
+        }, () => {
+            reject(new Error('Failed to delete contract from business'))
+        });
     });
 }

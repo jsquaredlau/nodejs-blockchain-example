@@ -5,6 +5,7 @@
 import { Router, Request, Response } from 'express';
 import { cleanContract, ContractPaper, HelloWorldContract } from '../services';
 import { ContractFactory } from 'ethereum-contracts';
+import { retrieveDeployedContract, removeFirebaseDeployedContract } from '../services';
 // import * as firebase from "firebase";
 
 // LIBRARY IMPORTS
@@ -27,7 +28,7 @@ const router: Router = Router();
 // };
 // firebase.initializeApp(config);
 // const database = firebase.database();
-let contractAddress = '';
+var contractAddress = '';
 
 //ROUTES
 router.get('/', (req: Request, res: Response) => {
@@ -129,46 +130,82 @@ router.get('/greeter/deploy/:schemeName', (req: Request, res: Response) => {
     }
 });
 
-// router.get('/greeter/greet/:schemeName', (req: Request, res: Response) => {
-//     const { schemeName } = req.params;
-//     const contractSrc = read.sync(path.join(path.resolve(), 'app', 'contracts') + '/helloWorld.sol', 'utf8');
-//     const output = solc.compile(contractSrc, 1);
-//     const abi = JSON.parse(output.contracts.greeter.interface);
-//     const MyContract = web3.eth.contract(abi);
-//
-//     firebase.database().ref('programs/' + 'BASYXlab/' + schemeName).once('value').then(function(snapshot) {
-//         var contract = snapshot.val().address;
-//         const myContractInstance = MyContract.at(contract);
-//
-//         const test = {
-//             from: web3.eth.coinbase,
-//             gas: 3000000
-//         }
-//
-//         console.log(myContractInstance.greet.call());
-//
-//         res.send(`Hello, ${name}`);
-//     });
-// });
-//
-// router.get('/greeter/kill/:schemeName', (req: Request, res: Response) => {
-//     const { schemeName } = req.params;
-//     const contractSrc = read.sync(path.join(path.resolve(), 'app', 'contracts') + '/helloWorld.sol', 'utf8');
-//     const output = solc.compile(contractSrc, 1);
-//     const abi = JSON.parse(output.contracts.greeter.interface);
-//     const MyContract = web3.eth.contract(abi);
-//     const myContractInstance = MyContract.at(contractAddress);
-//
-//     const test = {
-//         from: web3.eth.coinbase,
-//         gas: 3000000
-//     }
-//
-//     console.log(myContractInstance.kill.sendTransaction(test));
-//     database.ref('businesses/' + 'BASYXlab/' + schemeName).remove();
-//     database.ref('programs/' + 'BASYXlab/' + schemeName).remove();
-//
-//     res.send('Greeter Contract Killed');
-// });
+router.get('/greeter/greet/:schemeName', (req: Request, res: Response) => {
+    const { schemeName } = req.params;
+
+    const greeter = new ContractPaper('helloWorld', 'greeter');
+    retrieveDeployedContract('bottleo')
+        .then((snapshot) => {
+            const contractInstance = greeter.contract.at(snapshot[schemeName].contractAddress);
+            console.log(contractInstance.greet.call());
+            res.send('SUCCESS');
+        })
+        .fail((error) => {
+            console.log(error);
+            res.send('FAILURE');
+        });
+    // console.log(retrieveDeployedContract('bottleo'));
+    // let contractInstance = greeter.contract.at(retrieveDeployedContract(schemeName));
+    // console.log(contractInstance.greet.call());
+    // res.send('SHOULDNT BE HERE');
+    //
+    // const contractSrc = read.sync(path.join(path.resolve(), 'app', 'contracts') + '/helloWorld.sol', 'utf8');
+    // const output = solc.compile(contractSrc, 1);
+    // const abi = JSON.parse(output.contracts.greeter.interface);
+    // const MyContract = web3.eth.contract(abi);
+    //
+    // firebase.database().ref('programs/' + 'BASYXlab/' + schemeName).once('value').then(function(snapshot) {
+    //     var contract = snapshot.val().address;
+    //     const myContractInstance = MyContract.at(contract);
+    //
+    //     const test = {
+    //         from: web3.eth.coinbase,
+    //         gas: 3000000
+    //     }
+    //
+    //     console.log(myContractInstance.greet.call());
+    //
+    //     res.send(`Hello, ${name}`);
+    // });
+});
+
+router.get('/greeter/kill/:schemeName', (req: Request, res: Response) => {
+    const { schemeName } = req.params;
+
+    const greeter = new ContractPaper('helloWorld', 'greeter');
+    retrieveDeployedContract('bottleo')
+        .then((snapshot) => {
+            const contractInstance = greeter.contract.at(snapshot[schemeName].contractAddress);
+            const test = {
+                from: web3.eth.coinbase,
+                gas: 3000000
+            }
+            contractInstance.kill.sendTransaction(test);
+            removeFirebaseDeployedContract(schemeName)
+                .then((value) => {
+                    console.log(value);
+                    throw new Error('FORCED THROW');
+                    // res.send('KILL CONFIRMED');
+                });
+        })
+        .fail((error) => {
+            res.send(error);
+        });
+    // const contractSrc = read.sync(path.join(path.resolve(), 'app', 'contracts') + '/helloWorld.sol', 'utf8');
+    // const output = solc.compile(contractSrc, 1);
+    // const abi = JSON.parse(output.contracts.greeter.interface);
+    // const MyContract = web3.eth.contract(abi);
+    // const myContractInstance = MyContract.at(contractAddress);
+    //
+    // const test = {
+    //     from: web3.eth.coinbase,
+    //     gas: 3000000
+    // }
+    //
+    // console.log(myContractInstance.kill.sendTransaction(test));
+    // database.ref('businesses/' + 'BASYXlab/' + schemeName).remove();
+    // database.ref('programs/' + 'BASYXlab/' + schemeName).remove();
+
+});
 
 export const WelcomeController: Router = router;

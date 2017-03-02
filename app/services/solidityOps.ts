@@ -26,18 +26,17 @@ export function cleanContract(contract: String): String {
 export class ContractPaper {
     public contractFile: string;
     public contractName: string;
-    public bytecode: any;
-    public parameters: Array<any>;
+    public contract: any;
     public contractAddress: number;
-    public abi: any;
+    protected bytecode: any;
+    protected abi: any;
     protected contractSrc: string;
     protected compiledContract: any;
-    protected contract: any;
 
-    constructor(contractFile: string, contractName: string, parameters: Array<any>) {
+
+    constructor(contractFile: string, contractName: string) {
         this.contractFile = contractFile;
         this.contractName = contractName;
-        this.parameters = parameters;
         this.contractAddress = 0;
         this.contractSrc = read.sync(path.join(path.resolve(), 'app', 'contracts') + '/' + contractFile + '.sol', 'utf8');
         this.compiledContract = solc.compile(this.contractSrc, 1);
@@ -48,8 +47,11 @@ export class ContractPaper {
 }
 
 export class HelloWorldContract extends ContractPaper {
+    public parameters: Array<any>;
+
     constructor(contractFile: string, contractName: string, parameters: Array<any>) {
-        super(contractFile, contractName, parameters);
+        super(contractFile, contractName);
+        this.parameters = parameters;
     }
 
     deployContract(from: number) {
