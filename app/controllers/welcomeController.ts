@@ -3,7 +3,7 @@
 
 // MODULE IMPORTS
 import { Router, Request, Response } from 'express';
-import { cleanContract, ContractPaper, HelloWorldContract } from '../services';
+import { cleanContract, ContractPaper, HelloWorldContract, MyTokenContract } from '../services';
 import { ContractFactory } from 'ethereum-contracts';
 import { retrieveDeployedContract, removeFirebaseDeployedContract } from '../services';
 // import * as firebase from "firebase";
@@ -42,88 +42,58 @@ router.get('/', (req: Request, res: Response) => {
 //     res.send('<SOMETHING>');
 // });
 
-// router.get('/token/deploy/:schemeName', (req: Request, res: Response) => {
+router.get('/token/deploy/:schemeName', (req: Request, res: Response) => {
+    const { schemeName } = req.params;
+    if (schemeName !== null) {
+        const contract = new MyTokenContract('token', 'MyToken', [10, 'bottlecaps', 0, 'B']);
+        contract.deployContract(web3.eth.accounts[0])
+        res.send('Token Contract Deployed');
+    } else {
+        res.send('Please specify a scheme name');
+    }
+});
+
+router.get('/token/kill/:schemeName', (req: Request, res: Response) => {
+    const { schemeName } = req.params;
+    if (schemeName !== null) {
+        const myToken = new ContractPaper('token', 'MyToken');
+        retrieveDeployedContract(schemeName)
+            .then((snapshot) => {
+                const contractInstance = myToken.contract.at(snapshot[schemeName].contractAddress);
+                const tx = {
+                    from: web3.eth.coinbase,
+                    gas: 3000000
+                }
+                contractInstance.kill.sendTransaction(tx);
+                removeFirebaseDeployedContract('bws')
+                    .then((value) => {
+                        res.send('KILL CONFIRMED');
+                    })
+                    .fail((error) => {
+                        console.log(error);
+                        res.send('ERROR: Contract already removed');
+                    })
+            })
+            .fail((error) => {
+                console.log(error);
+                res.send('KILL FAILED');
+            });
+    } else {
+        res.send('Please specify a scheme name');
+    }
+});
+
+// router.get('', (req: Request, res: Response) => {
 //     const { schemeName } = req.params;
-//     if (schemeName !== null) {
-//         const contractSrc = read.sync(path.join(path.resolve(), 'app', 'contracts') + '/token.sol', 'utf8');
-//         const output = solc.compile(contractSrc, 1);
 //
-//         const initialSupply = 10;
-//         const tokenName = 'Bottle Caps';
-//         const tokenSymbol = 'B';
-//         const decimalUnits = '0';
-//
-//         const tokenContract = web3.eth.contract(JSON.parse(output.contracts.MyToken.interface));
-//         var MyToken = tokenContract.new(
-//             initialSupply,
-//             tokenName,
-//             decimalUnits,
-//             tokenSymbol,
-//             { from: web3.eth.accounts[0], data: output.contracts.MyToken.bytecode, gas: 100000 },
-//             function(e, contract) {
-//                 if (!e) {
-//                     if (!contract.address) {
-//                         console.log("MyToken contract transaction sent: TransactionHash: " + contract.transactionHash + " waiting to be mined...");
-//                     } else {
-//                         console.log("MyToken contract mined! Address: " + contract.address);
-//                         database.ref('programs/' + 'BASYXlab/' + schemeName).set({
-//                             contractType: 'MyToken',
-//                             contractAddress: contract.address,
-//                             timestamp: Date.now() / 1000 | 0,
-//                             origin: 'LaaS-1'
-//                         });
-//                         database.ref('businesses/' + 'BASYXlab/' + schemeName).set({
-//                             partners: null,
-//                             description: 'Basic Token Contract',
-//                             endDate: null,
-//                             startDatte: Date.now() / 1000 | 0
-//                         });
-//                         contractAddress = contract.address;
-//                     }
-//                 }
-//             }
-//         )
-//     }
 //     res.send('<SOMETHING>');
 // });
 
 router.get('/greeter/deploy/:schemeName', (req: Request, res: Response) => {
     const { schemeName } = req.params;
     if (schemeName !== null) {
-        const contractSrc = read.sync(path.join(path.resolve(), 'app', 'contracts') + '/helloWorld.sol', 'utf8');
-        // const output = solc.compile(contractSrc, 1);
-
-        var test = new HelloWorldContract('helloWorld', 'greeter', ['Hello BITCHES']);
-        test.deployContract(web3.eth.accounts[0]);
-
-        // var greeterCompiled = solc.compile(contractSrc, 1);
-        // var _greeting = "Hello World!"
-        // var greeterContract = web3.eth.contract(JSON.parse(greeterCompiled.contracts.greeter.interface));
-        // var greeter = greeterContract.new(_greeting,
-        //     { from: web3.eth.accounts[0], data: greeterCompiled.contracts.greeter.bytecode, gas: 1000000 },
-        //     function(e, contract) {
-        //         if (!e) {
-        //             if (!contract.address) {
-        //                 console.log("Contract transaction send: TransactionHash: " + contract.transactionHash + " waiting to be mined...");
-        //             } else {
-        //                 console.log("Contract mined! Address: " + contract.address);
-        //                 database.ref('programs/' + 'BASYXlab/' + schemeName).set({
-        //                     contractType: 'HelloWorld',
-        //                     contractAddress: contract.address,
-        //                     timestamp: Date.now() / 1000 | 0,
-        //                     origin: 'LaaS-1'
-        //                 });
-        //                 database.ref('businesses/' + 'BASYXlab/' + schemeName).set({
-        //                     partners: null,
-        //                     description: 'A hello world contract',
-        //                     endDate: null,
-        //                     startDatte: Date.now() / 1000 | 0
-        //                 });
-        //                 contractAddress = contract.address;
-        //             }
-        //
-        //         }
-        //     })
+        var contract = new HelloWorldContract('helloWorld', 'greeter', ['Hello BITCHES']);
+        contract.deployContract(web3.eth.accounts[0], schemeName);
         res.send('Greeter Contract Deployed!');
     } else {
         res.send('Specify Scheme Name Please');
@@ -134,46 +104,23 @@ router.get('/greeter/greet/:schemeName', (req: Request, res: Response) => {
     const { schemeName } = req.params;
 
     const greeter = new ContractPaper('helloWorld', 'greeter');
-    retrieveDeployedContract('bottleo')
+    retrieveDeployedContract(schemeName)
         .then((snapshot) => {
             const contractInstance = greeter.contract.at(snapshot[schemeName].contractAddress);
             console.log(contractInstance.greet.call());
-            res.send('SUCCESS');
+            res.send('GREET SUCCESS');
         })
         .fail((error) => {
             console.log(error);
-            res.send('FAILURE');
+            res.send('GREET FAILURE');
         });
-    // console.log(retrieveDeployedContract('bottleo'));
-    // let contractInstance = greeter.contract.at(retrieveDeployedContract(schemeName));
-    // console.log(contractInstance.greet.call());
-    // res.send('SHOULDNT BE HERE');
-    //
-    // const contractSrc = read.sync(path.join(path.resolve(), 'app', 'contracts') + '/helloWorld.sol', 'utf8');
-    // const output = solc.compile(contractSrc, 1);
-    // const abi = JSON.parse(output.contracts.greeter.interface);
-    // const MyContract = web3.eth.contract(abi);
-    //
-    // firebase.database().ref('programs/' + 'BASYXlab/' + schemeName).once('value').then(function(snapshot) {
-    //     var contract = snapshot.val().address;
-    //     const myContractInstance = MyContract.at(contract);
-    //
-    //     const test = {
-    //         from: web3.eth.coinbase,
-    //         gas: 3000000
-    //     }
-    //
-    //     console.log(myContractInstance.greet.call());
-    //
-    //     res.send(`Hello, ${name}`);
-    // });
 });
 
 router.get('/greeter/kill/:schemeName', (req: Request, res: Response) => {
     const { schemeName } = req.params;
 
     const greeter = new ContractPaper('helloWorld', 'greeter');
-    retrieveDeployedContract('bottleo')
+    retrieveDeployedContract(schemeName)
         .then((snapshot) => {
             const contractInstance = greeter.contract.at(snapshot[schemeName].contractAddress);
             const test = {
@@ -184,28 +131,12 @@ router.get('/greeter/kill/:schemeName', (req: Request, res: Response) => {
             removeFirebaseDeployedContract(schemeName)
                 .then((value) => {
                     console.log(value);
-                    throw new Error('FORCED THROW');
-                    // res.send('KILL CONFIRMED');
+                    res.send('KILL CONFIRMED');
                 });
         })
         .fail((error) => {
-            res.send(error);
+            res.send('KILL FAILED');
         });
-    // const contractSrc = read.sync(path.join(path.resolve(), 'app', 'contracts') + '/helloWorld.sol', 'utf8');
-    // const output = solc.compile(contractSrc, 1);
-    // const abi = JSON.parse(output.contracts.greeter.interface);
-    // const MyContract = web3.eth.contract(abi);
-    // const myContractInstance = MyContract.at(contractAddress);
-    //
-    // const test = {
-    //     from: web3.eth.coinbase,
-    //     gas: 3000000
-    // }
-    //
-    // console.log(myContractInstance.kill.sendTransaction(test));
-    // database.ref('businesses/' + 'BASYXlab/' + schemeName).remove();
-    // database.ref('programs/' + 'BASYXlab/' + schemeName).remove();
-
 });
 
 export const WelcomeController: Router = router;

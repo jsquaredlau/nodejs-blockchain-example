@@ -16,8 +16,8 @@ contract MyToken {
         owner = msg.sender;
         balanceOf[msg.sender] = initialSupply;              // Give the creator all initial tokens
         name = tokenName;           // The name for display purposes
-        symbol = tokenSymbol;       // The symbol for display purposes
         decimals = decimalUnits;    // Amount fo decimals for display purposes
+        symbol = tokenSymbol;       // The symbol for display purposes
     }
 
     /* Send coins */
@@ -37,8 +37,8 @@ contract MyToken {
     }
 
     function kill() {
-      if (msg.sender == owner) {
-        selfdestruct(owner);
-      }
+        if (msg.sender == owner) {
+            selfdestruct(owner);
+        }
     }
 }

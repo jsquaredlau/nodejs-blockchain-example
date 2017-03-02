@@ -1,6 +1,7 @@
 // Copyright BASYX.lab
 import { Router, Request, Response } from 'express';
 import { saveDeployedContract } from '../services';
+import * as Q from 'q';
 
 const trim = require('trim-newlines');
 const decomment = require('decomment');
@@ -54,9 +55,8 @@ export class HelloWorldContract extends ContractPaper {
         this.parameters = parameters;
     }
 
-    deployContract(from: number) {
-        console.log(this.contractAddress);
-        var greeter = this.contract.new(
+    deployContract(from: number, schemeName: string) {
+        return this.contract.new(
             this.parameters[0],
             { from: from, data: this.bytecode, gas: 1000000 },
             function(e, contract) {
@@ -65,12 +65,41 @@ export class HelloWorldContract extends ContractPaper {
                         console.log("Contract transaction send: TransactionHash: " + contract.transactionHash + " waiting to be mined...");
                     } else {
                         console.log("Contract mined! Address: " + contract.address);
-                        saveDeployedContract('bottleo', contract.address);
+                        saveDeployedContract(schemeName, contract.address);
                     }
 
                 }
             }
-        )
-        return;
+        );
+    }
+}
+
+export class MyTokenContract extends ContractPaper {
+    public parameters: Array<any>;
+
+    constructor(contractFile: string, contractName: string, parameters: Array<any>) {
+        super(contractFile, contractName);
+        this.parameters = parameters;
+    }
+
+    deployContract(from: number) {
+        return this.contract.new(
+            this.parameters[0], // initialSupply
+            this.parameters[1], // tokenName
+            this.parameters[2], // decimalUnits
+            this.parameters[3], // tokenSymbol
+            { from: from, data: this.bytecode, gas: 1000000 },
+            function(e, contract) {
+                if (!e) {
+                    if (!contract.address) {
+                        console.log("Contract transaction send: TransactionHash: " + contract.transactionHash + " waiting to be mined...");
+                    } else {
+                        console.log("Contract mined! Address: " + contract.address);
+                        saveDeployedContract('bws', contract.address);
+                    }
+
+                }
+            }
+        );
     }
 }

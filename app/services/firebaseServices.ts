@@ -13,6 +13,7 @@ firebase.initializeApp(config);
 const database = firebase.database();
 
 
+// TODO: Parameters => contractType, origin, partners, description, endDate
 export function saveDeployedContract(schemeName: string, contractAddress: number): void {
     database.ref('programs/' + 'BASYXlab/' + schemeName).set({
         contractType: 'MyToken',
@@ -32,8 +33,12 @@ export function retrieveDeployedContract(schemeName: string): any {
     return Q.Promise((resolve, reject, notify) => {
         firebase.database().ref('programs/' + 'BASYXlab/').once('value')
             .then(function(snapshot) {
-                resolve(snapshot.val());
-            }, function(error) {
+                if (snapshot.val() !== null) {
+                    resolve(snapshot.val());
+                } else {
+                    reject(new Error('Contract does not exist'));
+                }
+            }, (error) => {
                 reject(new Error('Contract detail retrieval failed'));
             });
     });
@@ -41,16 +46,17 @@ export function retrieveDeployedContract(schemeName: string): any {
 
 export function removeFirebaseDeployedContract(schemeName: string): any {
     return Q.Promise((resolve, reject, notify) => {
-        database.ref('businesses/' + 'BASYXlab/' + schemeName).remove().then(() => {
-            console.log('deleted first one');
-            database.ref('programs/' + 'BASYXlab/' + schemeName).remove().then(() => {
-                console.log('deleted both');
-                resolve(true);
-            }, () => {
-                reject(new Error('Failed to delete contract from programs'));
-            });
-        }, () => {
-            reject(new Error('Failed to delete contract from business'))
-        });
+        firebase.database().ref('programs/' + 'BASYXlab/').once('value')
+            .then(function(snapshot) {
+                if (snapshot !== null) {
+                    database.ref('businesses/' + 'BASYXlab/' + schemeName).remove();
+                    database.ref('programs/' + 'BASYXlab/' + schemeName).remove();
+                    resolve(true);
+                } else {
+                    reject(new Error('Already Deleted'));
+                }
+            }, (error) => {
+                reject(new Error('Retrieval Failed'));
+            })
     });
 }
