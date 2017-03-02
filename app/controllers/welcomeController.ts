@@ -4,9 +4,7 @@
 // MODULE IMPORTS
 import { Router, Request, Response } from 'express';
 import { cleanContract, ContractPaper, HelloWorldContract, MyTokenContract } from '../services';
-import { ContractFactory } from 'ethereum-contracts';
 import { retrieveDeployedContract, removeFirebaseDeployedContract } from '../services';
-// import * as firebase from "firebase";
 
 // LIBRARY IMPORTS
 const Web3 = require('web3');
@@ -18,17 +16,8 @@ const objectValues = require('object-values');
 // LIBRARY SETUP
 const web3 = new Web3();
 web3.setProvider(new web3.providers.HttpProvider('http://localhost:8545'));
+web3.eth.defaultAccount = web3.eth.coinbase;
 const router: Router = Router();
-// const config = {
-//     apiKey: "AIzaSyBQNNPknNbL21FqtJLDbZpd9DvC3Nqudnk",
-//     authDomain: "laas-1.firebaseapp.com",
-//     databaseURL: "https://laas-1.firebaseio.com",
-//     storageBucket: "laas-1.appspot.com",
-//     messagingSenderId: "622638005740"
-// };
-// firebase.initializeApp(config);
-// const database = firebase.database();
-var contractAddress = '';
 
 //ROUTES
 router.get('/', (req: Request, res: Response) => {
@@ -46,12 +35,77 @@ router.get('/token/deploy/:schemeName', (req: Request, res: Response) => {
     const { schemeName } = req.params;
     if (schemeName !== null) {
         const contract = new MyTokenContract('token', 'MyToken', [10, 'bottlecaps', 0, 'B']);
-        contract.deployContract(web3.eth.accounts[0])
+        contract.deployContract(web3.eth.accounts[0]);
         res.send('Token Contract Deployed');
     } else {
         res.send('Please specify a scheme name');
     }
 });
+
+// TODO: turn this into a promise
+// TODO: actual recipient address
+router.get('/token/transfer/:schemeName/:recipient', (req: Request, res: Response) => {
+    const { schemeName, recipient } = req.params;
+    if (schemeName !== null && recipient !== null) {
+        const myToken = new ContractPaper('token', 'MyToken');
+        retrieveDeployedContract(schemeName)
+            .then((snapshot) => {
+                const contractInstance = myToken.contract.at(snapshot[schemeName].contractAddress);
+                const transferEvent = contractInstance.Transfer();
+                transferEvent.watch((error, result) => {
+                    if (error) {
+                        console.log(error);
+                    } else {
+                        console.log('got the event');
+                        console.log(result.args);
+                    }
+                });
+                contractInstance
+                    .transfer(web3.eth.accounts[1], 1);
+                res.send('Token Transfer Complete');
+            })
+            .fail((error) => {
+                console.log(error);
+                res.send('TRANSFER FAILED');
+            });
+    } else {
+        res.send('Please specify a scheme name and recipient')
+    }
+});
+
+router.get('/token/redemption/:schemeName/:recipient', (req: Request, res: Response) => {
+    const { schemeName, recipient } = req.params;
+    if (schemeName !== null && recipient !== null) {
+        const myToken = new ContractPaper('token', 'MyToken');
+        retrieveDeployedContract(schemeName)
+            .then((snapshot) => {
+                const contractInstance = myToken.contract.at(snapshot[schemeName].contractAddress);
+                const redemptionEvent = contractInstance.Redemption();
+                redemptionEvent.watch((error, result) => {
+                    if (error) {
+                        console.log(error);
+                    } else {
+                        console.log('got the event');
+                        console.log(result.args);
+                    }
+                });
+                const tx = {
+                    from: web3.eth.accounts[1],
+                    gas: 3000000
+                }
+                contractInstance
+                    .redemption('teddy bear', web3.eth.accounts[1]);
+                res.send('Token Redemption Complete');
+            })
+            .fail((error) => {
+                console.log(error);
+                res.send('REDEMPTION FAILED');
+            });
+    } else {
+        res.send('Please specify a scheme name and recipient')
+    }
+});
+
 
 router.get('/token/kill/:schemeName', (req: Request, res: Response) => {
     const { schemeName } = req.params;
@@ -82,12 +136,6 @@ router.get('/token/kill/:schemeName', (req: Request, res: Response) => {
         res.send('Please specify a scheme name');
     }
 });
-
-// router.get('', (req: Request, res: Response) => {
-//     const { schemeName } = req.params;
-//
-//     res.send('<SOMETHING>');
-// });
 
 router.get('/greeter/deploy/:schemeName', (req: Request, res: Response) => {
     const { schemeName } = req.params;
