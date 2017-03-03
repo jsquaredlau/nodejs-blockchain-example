@@ -50,12 +50,12 @@ contract MyToken {
                 /*throw;*/
             }
         } else if (sha3(_item) == sha3("coke")) {
-            if (balanceOf[_customer] >= 3) {
-                balanceOf[_customer] -= 3;
-                balanceOf[owner] += 3;
-                Redemption(msg.sender, _customer, 3, _item, 'success');
+            if (balanceOf[_customer] >= 1) {
+                balanceOf[_customer] -= 1;
+                balanceOf[owner] += 1;
+                Redemption(msg.sender, _customer, 1, _item, 'success');
             } else {
-                Redemption(msg.sender, _customer, 3, _item, 'failure');
+                Redemption(msg.sender, _customer, 1, _item, 'failure');
                 /*throw;*/
             }
         }

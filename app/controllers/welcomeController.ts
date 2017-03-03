@@ -58,10 +58,10 @@ router.get('/token/transfer/:schemeName/:recipient', (req: Request, res: Respons
                     } else {
                         console.log('got the event');
                         console.log(result.args);
+                        transferEvent.stopWatching();
                     }
                 });
-                contractInstance
-                    .transfer(web3.eth.accounts[1], 1);
+                contractInstance.transfer(web3.eth.accounts[1], 1);
                 res.send('Token Transfer Complete');
             })
             .fail((error) => {
@@ -87,14 +87,14 @@ router.get('/token/redemption/:schemeName/:recipient', (req: Request, res: Respo
                     } else {
                         console.log('got the event');
                         console.log(result.args);
+                        redemptionEvent.stopWatching();
                     }
                 });
                 const tx = {
                     from: web3.eth.accounts[1],
                     gas: 3000000
                 }
-                contractInstance
-                    .redemption('teddy bear', web3.eth.accounts[1]);
+                contractInstance.redemption('teddy bear', web3.eth.accounts[1]);
                 res.send('Token Redemption Complete');
             })
             .fail((error) => {
