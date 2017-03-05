@@ -3,7 +3,7 @@
 
 // MODULE IMPORTS
 import { Router, Request, Response } from 'express';
-import { cleanContract, ContractPaper, HelloWorldContract, MyTokenContract, VaultContract } from '../services';
+import { cleanContract, ContractPaper, HelloWorldContract, MyTokenContract, VaultContract, BankContract } from '../services';
 import { retrieveDeployedContract, removeFirebaseDeployedContract } from '../services';
 
 // LIBRARY IMPORTS
@@ -30,6 +30,13 @@ router.get('/', (req: Request, res: Response) => {
 //
 //     res.send('<SOMETHING>');
 // });
+
+router.get('/bank/deploy/:vaultAddress', (req: Request, res: Response) => {
+    const { vaultAddress } = req.params;
+    const contract = new BankContract('bank', 'Bank', [parseInt(vaultAddress), 'BASYXlab', 0]);
+    contract.deployContract(web3.eth.accounts[0]);
+    res.send('Bank contract deployed');
+});
 
 router.get('/vault/deploy', (req: Request, res: Response) => {
     const contract = new VaultContract('vault', 'Vault', ['Vault 303', 'bottlecaps', 0, 0, [], []]);

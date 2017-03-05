@@ -1,75 +1,63 @@
 pragma solidity ^0.4.8;
-contract tokenRecipient { function receiveApproval(address _from, uint256 _value, address _token, bytes _extraData); }
 
-contract MyToken {
-    /* Public variables of the token */
-    string public standard = 'Token 0.1';
-    string public name;
-    string public symbol;
-    uint8 public decimals;
-    uint256 public totalSupply;
+import "./vault.sol";
 
-    /* This creates an array with all balances */
-    mapping (address => uint256) public balanceOf;
-    mapping (address => mapping (address => uint256)) public allowance;
+/* The Bank Contract
+ * Single handedly responsible for looking after it's associated vault and its
+ * contents.
+ * It will manage the distribution of tokens for a given vault based upon the
+ * conditions set out within
+ * The relationship between a vault and bank is 1-to-1 (FOR NOW??)
+ */
 
-    /* This generates a public event on the blockchain that will notify clients */
-    event Transfer(address indexed from, address indexed to, uint256 value);
+contract Bank {
+    /* CONTRACT VARIABLES */
+    address owner;
+    address vaultLocation;
+    string businessName;
+    uint256 digitalSignature;
+    Vault v;
 
-    /* Initializes contract with initial supply tokens to the creator of the contract */
-    function MyToken(
-        uint256 initialSupply,
-        string tokenName,
-        uint8 decimalUnits,
-        string tokenSymbol
-        ) {
-        balanceOf[msg.sender] = initialSupply;              // Give the creator all initial tokens
-        totalSupply = initialSupply;                        // Update total supply
-        name = tokenName;                                   // Set the name for display purposes
-        symbol = tokenSymbol;                               // Set the symbol for display purposes
-        decimals = decimalUnits;                            // Amount of decimals for display purposes
+    /* EVENTS */
+
+    /* CONSTRUCTOR */
+    function Bank(address _vaultLocation, string _businessName, uint256 _digitalSignature) {
+        owner = msg.sender;
+        businessName = _businessName;
+        digitalSignature = _digitalSignature;
+        v = Vault(_vaultLocation);
     }
 
-    /* Send coins */
-    function transfer(address _to, uint256 _value) {
-        if (balanceOf[msg.sender] < _value) throw;           // Check if the sender has enough
-        if (balanceOf[_to] + _value < balanceOf[_to]) throw; // Check for overflows
-        balanceOf[msg.sender] -= _value;                     // Subtract from the sender
-        balanceOf[_to] += _value;                            // Add the same to the recipient
-        Transfer(msg.sender, _to, _value);                   // Notify anyone listening that this transfer took place
+    /* FUNCTIONS */
+    function distributeTokens(address to, uint256 value) returns (uint256 result) {
+        return v.increaseBalance(to, value);
     }
 
-    /* Allow another contract to spend some tokens in your behalf */
-    function approve(address _spender, uint256 _value)
-        returns (bool success) {
-        allowance[msg.sender][_spender] = _value;
-        return true;
+    function spendTokens(address to, uint256 value) returns (uint256 result) {
+        return v.decreaseBalance(to, value);
     }
 
-    /* Approve and then comunicate the approved contract in a single tx */
-    function approveAndCall(address _spender, uint256 _value, bytes _extraData)
-        returns (bool success) {
-        tokenRecipient spender = tokenRecipient(_spender);
-        if (approve(_spender, _value)) {
-            spender.receiveApproval(msg.sender, _value, this, _extraData);
-            return true;
+    function refundTokens(address to, uint256 value) returns (uint256 result) {
+        return v.increaseBalance(to, value);
+    }
+
+    function reclaimTokens(address to, uint256 value) returns (uint256 result) {
+        return v.decreaseBalance(to, value);
+    }
+
+    function die() {
+        if (msg.sender == owner) {
+            selfdestruct(owner);
         }
     }
 
-    /* A contract attempts to get the coins */
-    function transferFrom(address _from, address _to, uint256 _value) returns (bool success) {
-        if (balanceOf[_from] < _value) throw;                 // Check if the sender has enough
-        if (balanceOf[_to] + _value < balanceOf[_to]) throw;  // Check for overflows
-        if (_value > allowance[_from][msg.sender]) throw;   // Check allowance
-        balanceOf[_from] -= _value;                          // Subtract from the sender
-        balanceOf[_to] += _value;                            // Add the same to the recipient
-        allowance[_from][msg.sender] -= _value;
-        Transfer(_from, _to, _value);
+    // TODO: implement this with hashes
+    function securityCheck() private returns (bool result) {
         return true;
     }
-
     /* This unnamed function is called whenever someone tries to send ether to it */
     function () {
         throw;     // Prevents accidental sending of ether
     }
+
 }

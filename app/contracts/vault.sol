@@ -89,12 +89,16 @@ contract Vault {
             ManipulateBalance('SUCCES',msg.sender, account, old, balanceOf[account]);
             return balanceOf[account];
         }
-
     }
 
     // TODO: implement this
     function retrieveLedger() {
         throw;
+    }
+
+    /* This unnamed function is called whenever someone tries to send ether to it */
+    function () {
+        throw;     // Prevents accidental sending of ether
     }
 
 }

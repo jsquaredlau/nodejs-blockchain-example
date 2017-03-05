@@ -35,12 +35,21 @@ export class ContractPaper {
     protected compiledContract: any;
 
 
-    constructor(contractFile: string, contractName: string) {
+    constructor(contractFile: string, contractName: string, imports?: any) {
         this.contractFile = contractFile;
         this.contractName = contractName;
         this.contractAddress = 0;
-        this.contractSrc = read.sync(path.join(path.resolve(), 'app', 'contracts') + '/' + contractFile + '.sol', 'utf8');
-        this.compiledContract = solc.compile(this.contractSrc, 1);
+        if (imports !== null) {
+            var contractCollection = {};
+            contractCollection[contractFile + '.sol'] = read.sync(path.join(path.resolve(), 'app', 'contracts') + '/' + contractFile + '.sol', 'utf8');
+            for (var i in imports) {
+                contractCollection[imports[i] + '.sol'] = read.sync(path.join(path.resolve(), 'app', 'contracts') + '/' + imports[i] + '.sol', 'utf8');
+            }
+            this.compiledContract = solc.compile({ sources: contractCollection }, 1);
+        } else {
+            this.contractSrc = read.sync(path.join(path.resolve(), 'app', 'contracts') + '/' + contractFile + '.sol', 'utf8');
+            this.compiledContract = solc.compile(this.contractSrc, 1);
+        }
         this.bytecode = this.compiledContract.contracts[this.contractName].bytecode;
         this.abi = JSON.parse(this.compiledContract.contracts[this.contractName].interface);
         this.contract = web3.eth.contract(this.abi);
@@ -127,6 +136,33 @@ export class VaultContract extends ContractPaper {
                     } else {
                         console.log("Contract mined! Address: " + contract.address);
                         saveDeployedContract('vault', contract.address);
+                    }
+
+                }
+            }
+        );
+    }
+}
+
+export class BankContract extends ContractPaper {
+    public parameters: Array<any>;
+    constructor(contractFile: string, contractName: string, parameters: Array<any>) {
+        super(contractFile, contractName, ['vault']);
+        this.parameters = parameters;
+    }
+    deployContract(from: number) {
+        return this.contract.new(
+            this.parameters[0], // vaultAddress
+            this.parameters[1], // businessName
+            this.parameters[2], // digitalSignature
+            { from: from, data: this.bytecode, gas: 1000000 },
+            function(e, contract) {
+                if (!e) {
+                    if (!contract.address) {
+                        console.log("Contract transaction send: TransactionHash: " + contract.transactionHash + " waiting to be mined...");
+                    } else {
+                        console.log("Contract mined! Address: " + contract.address);
+                        saveDeployedContract('bank', contract.address);
                     }
 
                 }
