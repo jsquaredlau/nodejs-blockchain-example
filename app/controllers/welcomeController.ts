@@ -3,7 +3,7 @@
 
 // MODULE IMPORTS
 import { Router, Request, Response } from 'express';
-import { cleanContract, ContractPaper, HelloWorldContract, MyTokenContract } from '../services';
+import { cleanContract, ContractPaper, HelloWorldContract, MyTokenContract, VaultContract } from '../services';
 import { retrieveDeployedContract, removeFirebaseDeployedContract } from '../services';
 
 // LIBRARY IMPORTS
@@ -30,6 +30,72 @@ router.get('/', (req: Request, res: Response) => {
 //
 //     res.send('<SOMETHING>');
 // });
+
+router.get('/vault/deploy', (req: Request, res: Response) => {
+    const contract = new VaultContract('vault', 'Vault', ['Vault 303', 'bottlecaps', 0, 0, [], []]);
+    // const { schemeName } = req.params;
+
+    contract.deployContract(web3.eth.accounts[0]);
+
+    res.send('Vault contract deployed');
+});
+
+router.get('/vault/transfer/:schemeName', (req: Request, res: Response) => {
+    const { schemeName } = req.params;
+    if (schemeName !== null) {
+        const vault = new ContractPaper('vault', 'Vault');
+        retrieveDeployedContract(schemeName)
+            .then((snapshot) => {
+                const contractInstance = vault.contract.at(snapshot[schemeName].contractAddress);
+                const transferEvent = contractInstance.IncreaseBalance();
+                transferEvent.watch((error, result) => {
+                    if (error) {
+                        console.log(error);
+                    } else {
+                        console.log('got the event');
+                        console.log(result.args);
+                        transferEvent.stopWatching();
+                    }
+                });
+                contractInstance.increaseBalance(web3.eth.accounts[1], 100);
+                res.send('Token Transfer Complete');
+            })
+            .fail((error) => {
+                console.log(error);
+                res.send('TRANSFER FAILED');
+            });
+    } else {
+        res.send('Please specify a scheme name')
+    }
+});
+
+router.get('/vault/redeem/:schemeName', (req: Request, res: Response) => {
+    const { schemeName } = req.params;
+    if (schemeName !== null) {
+        const vault = new ContractPaper('vault', 'Vault');
+        retrieveDeployedContract(schemeName)
+            .then((snapshot) => {
+                const contractInstance = vault.contract.at(snapshot[schemeName].contractAddress);
+                const redemptionEvent = contractInstance.DecreaseBalance();
+                redemptionEvent.watch((error, result) => {
+                    if (error) {
+                        console.log(error);
+                    } else {
+                        console.log(result.args);
+                        redemptionEvent.stopWatching();
+                    }
+                });
+                contractInstance.decreaseBalance(web3.eth.accounts[1], 100);
+                res.send('Token Redemption Complete');
+            })
+            .fail((error) => {
+                console.log(error);
+                res.send('REDEMPTION FAILED');
+            });
+    } else {
+        res.send('Please specify a scheme name')
+    }
+})
 
 router.get('/token/deploy/:schemeName', (req: Request, res: Response) => {
     const { schemeName } = req.params;
@@ -73,6 +139,7 @@ router.get('/token/transfer/:schemeName/:recipient', (req: Request, res: Respons
     }
 });
 
+// TODO: Provision for redeemed item
 router.get('/token/redemption/:schemeName/:recipient', (req: Request, res: Response) => {
     const { schemeName, recipient } = req.params;
     if (schemeName !== null && recipient !== null) {
@@ -105,7 +172,6 @@ router.get('/token/redemption/:schemeName/:recipient', (req: Request, res: Respo
         res.send('Please specify a scheme name and recipient')
     }
 });
-
 
 router.get('/token/kill/:schemeName', (req: Request, res: Response) => {
     const { schemeName } = req.params;

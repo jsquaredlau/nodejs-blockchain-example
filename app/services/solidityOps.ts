@@ -103,3 +103,34 @@ export class MyTokenContract extends ContractPaper {
         );
     }
 }
+
+export class VaultContract extends ContractPaper {
+    public parameters: Array<any>;
+    constructor(contractFile: string, contractName: string, parameters: Array<any>) {
+        super(contractFile, contractName);
+        this.parameters = parameters;
+    }
+    // string _vaultName, uint256 _accountCount, string _tokenName, uint256 _contractKey, address[] _addresses, uint256[] _balances
+    deployContract(from: number) {
+        return this.contract.new(
+            this.parameters[0], // vaultName
+            this.parameters[1], // tokenName
+            this.parameters[2], // contractKey
+            this.parameters[3], // accountCount
+            this.parameters[4], // addresses
+            this.parameters[5], // balances
+            { from: from, data: this.bytecode, gas: 1000000 },
+            function(e, contract) {
+                if (!e) {
+                    if (!contract.address) {
+                        console.log("Contract transaction send: TransactionHash: " + contract.transactionHash + " waiting to be mined...");
+                    } else {
+                        console.log("Contract mined! Address: " + contract.address);
+                        saveDeployedContract('vault', contract.address);
+                    }
+
+                }
+            }
+        );
+    }
+}
