@@ -7,10 +7,15 @@ import * as express from 'express';
 // Import WelcomeController from controllers entry point
 import { WelcomeController } from './controllers';
 
+const bodyParser = require('body-parser');
+
 // Create a new express application instance
 const app: express.Application = express();
 // The port the express app will listen on
 const port: number = process.env.PORT || 3000;
+
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
 
 // Mount the WelcomeController at the /welcome route
 app.use('/', WelcomeController);

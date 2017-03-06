@@ -38,6 +38,13 @@ router.get('/bank/deploy/:vaultAddress', (req: Request, res: Response) => {
     res.send('Bank contract deployed');
 });
 
+router.post('/bank/distribute', (req: Request, res: Response) => {
+    const { value } = req.body;
+    console.log(value);
+    res.send(value);
+});
+
+
 router.get('/vault/deploy', (req: Request, res: Response) => {
     const contract = new VaultContract('vault', 'Vault', ['Vault 303', 'bottlecaps', 0, 0, [], []]);
     // const { schemeName } = req.params;

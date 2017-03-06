@@ -11,6 +11,7 @@
     "@types/node": "^7.0.4",
     "@types/q": "0.0.32",
     "@types/serve-static": "^1.7.31",
+    "body-parser": "^1.17.0",
     "decomment": "^0.8.7",
     "ethereum-contracts": "^1.0.0",
     "express": "^4.14.0",
