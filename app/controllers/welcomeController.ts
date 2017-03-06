@@ -11,7 +11,7 @@ const Web3 = require('web3');
 const solc = require('solc');
 const read = require('read-file');
 const path = require('path')
-const objectValues = require('object-values');
+// const objectValues = require('object-values');
 
 // LIBRARY SETUP
 const web3 = new Web3();
@@ -33,15 +33,37 @@ router.get('/', (req: Request, res: Response) => {
 
 router.get('/bank/deploy/:vaultAddress', (req: Request, res: Response) => {
     const { vaultAddress } = req.params;
-    const contract = new BankContract('bank', 'Bank', [parseInt(vaultAddress), 'BASYXlab', 0]);
+    const contract = new BankContract('bank', 'Bank', [vaultAddress, 'BASYXlab', 0]);
     contract.deployContract(web3.eth.accounts[0]);
     res.send('Bank contract deployed');
 });
 
-router.post('/bank/distribute', (req: Request, res: Response) => {
-    const { value } = req.body;
-    console.log(value);
-    res.send(value);
+router.post('/bank/distribute/:schemeName', (req: Request, res: Response) => {
+    const { schemeName } = req.params;
+    if (schemeName !== null) {
+        const bank = new ContractPaper('bank', 'Bank', ['vault']);
+        retrieveDeployedContract(schemeName)
+            .then((snapshot) => {
+                const contractInstance = bank.contract.at(snapshot[schemeName].contractAddress);
+                const transferEvent = contractInstance.DistributeTokens();
+                transferEvent.watch((error, result) => {
+                    if (error) {
+                        console.log(error);
+                    } else {
+                        console.log(result.args);
+                        transferEvent.stopWatching();
+                    }
+                });
+                console.log(typeof contractInstance.distributeTokens(web3.eth.accounts[1], 69));
+                res.send('Token distribution Complete');
+            })
+            .fail((error) => {
+                console.log(error);
+                res.send('DISTRIBUTION FAILED');
+            });
+    } else {
+        res.send('Please specify a scheme name')
+    }
 });
 
 

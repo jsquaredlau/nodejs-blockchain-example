@@ -19,6 +19,10 @@ contract Bank {
     Vault v;
 
     /* EVENTS */
+    event DistributeTokens(string status, address indexed from);
+    event SpendTokens(string status, address indexed from);
+    event RefundTokens(string status, address indexed from);
+    event ReclaimTokens(string status, address indexed from);
 
     /* CONSTRUCTOR */
     function Bank(address _vaultLocation, string _businessName, uint256 _digitalSignature) {
@@ -30,18 +34,22 @@ contract Bank {
 
     /* FUNCTIONS */
     function distributeTokens(address to, uint256 value) returns (uint256 result) {
+        DistributeTokens('SUCCESS', msg.sender);
         return v.increaseBalance(to, value);
     }
 
     function spendTokens(address to, uint256 value) returns (uint256 result) {
+        SpendTokens('SUCCESS', msg.sender);
         return v.decreaseBalance(to, value);
     }
 
     function refundTokens(address to, uint256 value) returns (uint256 result) {
+        RefundTokens('SUCESS', msg.sender);
         return v.increaseBalance(to, value);
     }
 
     function reclaimTokens(address to, uint256 value) returns (uint256 result) {
+        ReclaimTokens('SUCESS', msg.sender);
         return v.decreaseBalance(to, value);
     }
 
