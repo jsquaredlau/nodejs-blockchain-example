@@ -3,7 +3,7 @@
 
 // MODULE IMPORTS
 import { Router, Request, Response } from 'express';
-import { cleanContract, ContractPaper, HelloWorldContract, MyTokenContract, VaultContract, BankContract } from '../services';
+import { cleanContract, ContractPaper, HelloWorldContract, MyTokenContract, VaultContract, BankContract, BASYXlabBankContract } from '../services';
 import { retrieveDeployedContract, removeFirebaseDeployedContract } from '../services';
 
 // LIBRARY IMPORTS
@@ -30,6 +30,64 @@ router.get('/', (req: Request, res: Response) => {
 //
 //     res.send('<SOMETHING>');
 // });
+router.get('/BASYXlabBank/deploy/:vaultAddress', (req: Request, res: Response) => {
+    const { vaultAddress } = req.params;
+    const contract = new BASYXlabBankContract('BASYXlabBank', 'BASYXlabBank', [vaultAddress, 'BASYXlab', 0, 'AUS']);
+    contract.deployContract(web3.eth.accounts[0]);
+    res.send('Bank contract deployed');
+});
+
+router.get('/BASYXlabBank/alive', (req: Request, res: Response) => {
+    const bank = new ContractPaper('BASYXlabBank', 'BASYXlabBank', ['bank', 'vault']);
+    const schemeName = 'BASYXlabBank';
+    retrieveDeployedContract(schemeName)
+        .then((snapshot) => {
+            const contractInstance = bank.contract.at(snapshot[schemeName].contractAddress);
+            const e = contractInstance.Alive();
+            e.watch((error, result) => {
+                if (error) {
+                    console.log(error);
+                } else {
+                    console.log(result.args);
+                }
+            });
+            contractInstance.alive();
+            res.send('CHECKED IF ALIVE');
+        })
+        .fail((error) => {
+            res.send('ALIVE FAILED');
+        });
+});
+
+router.post('/BASYXlabBank/die', (req: Request, res: Response) => {
+    const schemeName = 'BASYXlabBank';
+    const bank = new ContractPaper('BASYXlabBank', 'BASYXlabBank', ['bank', 'vault']);
+    retrieveDeployedContract(schemeName)
+        .then((snapshot) => {
+            const contractInstance = bank.contract.at(snapshot[schemeName].contractAddress);
+            const e = contractInstance.Die();
+            e.watch((error, result) => {
+                if (error) {
+                    console.log(error);
+                } else {
+                    console.log(result.args);
+                }
+            });
+            const test = {
+                from: web3.eth.coinbase,
+                gas: 3000000
+            }
+            contractInstance.die.sendTransaction(test);
+            removeFirebaseDeployedContract(schemeName)
+                .then((value) => {
+                    console.log(value);
+                    res.send('KILL CONFIRMED');
+                });
+        })
+        .fail((error) => {
+            res.send('KILL FAILED');
+        });
+});
 
 router.get('/bank/deploy/:vaultAddress', (req: Request, res: Response) => {
     const { vaultAddress } = req.params;

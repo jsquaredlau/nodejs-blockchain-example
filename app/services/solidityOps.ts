@@ -170,3 +170,31 @@ export class BankContract extends ContractPaper {
         );
     }
 }
+
+export class BASYXlabBankContract extends ContractPaper {
+    public parameters: Array<any>;
+    constructor(contractFile: string, contractName: string, parameters: Array<any>) {
+        super(contractFile, contractName, ['bank', 'vault']);
+        this.parameters = parameters;
+    }
+    deployContract(from: number) {
+        return this.contract.new(
+            this.parameters[0], // vaultAddress
+            this.parameters[1], // businessName
+            this.parameters[2], // digitalSignature,
+            this.parameters[3],
+            { from: from, data: this.bytecode, gas: 1000000 },
+            function(e, contract) {
+                if (!e) {
+                    if (!contract.address) {
+                        console.log("Contract transaction send: TransactionHash: " + contract.transactionHash + " waiting to be mined...");
+                    } else {
+                        console.log("Contract mined! Address: " + contract.address);
+                        saveDeployedContract('BASYXlabBank', contract.address);
+                    }
+
+                }
+            }
+        );
+    }
+}
