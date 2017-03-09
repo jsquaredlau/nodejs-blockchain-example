@@ -19,7 +19,9 @@
         "!node_modules/**"
     ],
     "files": [
+        "app/controllers/businessController.ts",
         "app/controllers/index.ts",
+        "app/controllers/userController.ts",
         "app/controllers/welcomeController.ts",
         "app/server.ts",
         "app/services/firebaseServices.ts",

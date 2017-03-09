@@ -5,7 +5,7 @@
 import * as express from 'express';
 
 // Import WelcomeController from controllers entry point
-import { WelcomeController } from './controllers';
+import { WelcomeController, UserController, BusinessController } from './controllers';
 
 const bodyParser = require('body-parser');
 
@@ -17,8 +17,13 @@ const port: number = process.env.PORT || 3000;
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-// Mount the WelcomeController at the /welcome route
 app.use('/', WelcomeController);
+
+app.use('/api/v1/user', UserController);
+
+app.use('/api/v1/business', BusinessController);
+
+// app.user('/api/v1/laas', LaasController);
 
 // Serve the application at the given port
 app.listen(port, () => {

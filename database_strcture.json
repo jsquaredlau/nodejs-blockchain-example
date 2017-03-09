@@ -1,0 +1,54 @@
+'LaaS': {
+    'businesses': {
+        'BASYXlab': {
+            'activeSchemes': {
+                'vault': true
+            },
+            'deactivatedSchemes': {
+                'test': true
+            },
+            'details': {},
+            'customers': {
+                '0xdc0ec5f96a89d1': < fbIdentifier >
+            },
+            'inventory': {
+                'itemName': < > ,
+                'description': < > ,
+                'promotionType': < > ,
+                'promotionDetail': []
+            }
+        }
+    },
+    'schemes': {
+        'BASYXlab': {
+            'vault': {
+                'contractAddress': < > ,
+                'contractClass': < > ,
+                'origin': < > ,
+                'creationDate': < > ,
+                'activeUntil': < > ,
+                'description': < > ,
+                'members': {
+                    '0xdc0ec5f96a89d1': true
+                }
+            }
+        }
+    },
+    'users': {
+        '0xdc0ec5f96a89d1': { // Hash of the user, but the user has 1-to-1 relationship with a business
+            'passphrase': < > , // This might not be needed if we use fb identifier for this
+            'fbIdentifier': < > ,
+            'customerOf': < > ,
+            'name': < > ,
+            'memberOf': {
+                'vault': true
+            },
+            'inventory': {
+                '0xdc0ec5f96a89d1': { // Hash of the inventory objects a user has
+                    'QR': < > ,
+                    'dateOfIssue': < >
+                }
+            }
+        }
+    }
+}
