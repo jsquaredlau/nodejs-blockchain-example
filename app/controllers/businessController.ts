@@ -3,6 +3,7 @@
 
 // MODULE IMPORTS
 import { Router, Request, Response } from 'express';
+import { deployContract } from '../services';
 
 // LIBRARY IMPORTS
 const Web3 = require('web3');
@@ -16,10 +17,66 @@ web3.setProvider(new web3.providers.HttpProvider('http://localhost:8545'));
 web3.eth.defaultAccount = web3.eth.coinbase;
 const router: Router = Router();
 
+/* TEMPLATE */
+// router.get('', (req: Request, res: Response) => {
+//     const { schemeName } = req.params;
+//
+//     res.send('<SOMETHING>');
+// });
+
+interface ContractParameters {
+    name: string;
+    description: string;
+    origin: string;
+    token: string;
+    region: string;
+    contractKey: number;
+    expirationDate?: Date;
+    accounts?: Array<[string, number]>;
+}
+
 //ROUTES
 router.get('/', (req: Request, res: Response) => {
     res.send('Welcome to the User Controller!');
 });
 
+router.post('/:business/:schemeName/deploy', (req: Request, res: Response) => {
+    const { business, schemeName } = req.params;
+    const contractParameters = req.body;
+    deployContract(business, schemeName, contractParameters)
+        .then((result) => {
+            console.log(result);
+            res.send('Contract Deployed!');
+        })
+        .fail((error) => {
+            console.log(error);
+            res.send('Contract deployment failed. Please try again');
+        });
+    res.send('Contract deployed');
+});
+
+router.get('/:business/scheme/list', (req: Request, res: Response) => {
+    res.send();
+});
+
+router.get('/:business/scheme/details', (req: Request, res: Response) => {
+    res.send();
+});
+
+router.post('/:business/scheme/update', (req: Request, res: Response) => {
+    res.send();
+});
+
+router.post('/:business/scheme/deactivate', (req: Request, res: Response) => {
+    res.send();
+});
+
+router.post('/:business/details', (req: Request, res: Response) => {
+    res.send();
+});
+
+router.post('/business/details/update', (req: Request, res: Response) => {
+    res.send();
+});
 
 export const BusinessController: Router = router;

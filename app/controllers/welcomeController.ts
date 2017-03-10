@@ -3,7 +3,7 @@
 
 // MODULE IMPORTS
 import { Router, Request, Response } from 'express';
-import { cleanContract, ContractPaper, HelloWorldContract, MyTokenContract, VaultContract, BankContract, BASYXlabBankContract } from '../services';
+import { ContractPaper, HelloWorldContract, MyTokenContract, VaultContract, BankContract, BASYXlabBankContract } from '../services';
 import { retrieveDeployedContract, removeFirebaseDeployedContract } from '../services';
 
 // LIBRARY IMPORTS
@@ -126,7 +126,7 @@ router.post('/bank/distribute/:schemeName', (req: Request, res: Response) => {
 
 
 router.get('/vault/deploy', (req: Request, res: Response) => {
-    const contract = new VaultContract('vault', 'Vault', ['Vault 303', 'bottlecaps', 0, 0, [], []]);
+    const contract = new VaultContract('Vault', ['Vault 303', 'bottlecaps', 0, 0, [], []]);
     // const { schemeName } = req.params;
 
     contract.deployContract(web3.eth.accounts[0]);
@@ -300,7 +300,7 @@ router.get('/token/kill/:schemeName', (req: Request, res: Response) => {
 router.get('/greeter/deploy/:schemeName', (req: Request, res: Response) => {
     const { schemeName } = req.params;
     if (schemeName !== null) {
-        var contract = new HelloWorldContract('helloWorld', 'greeter', ['Hello BITCHES']);
+        var contract = new HelloWorldContract('greeter', ['Hello BITCHES']);
         contract.deployContract(web3.eth.accounts[0], schemeName);
         res.send('Greeter Contract Deployed!');
     } else {

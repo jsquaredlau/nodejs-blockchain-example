@@ -4,7 +4,7 @@
     },
     "compilerOptions": {
         "module": "commonjs",
-        "target": "es5",
+        "target": "es6",
         "noImplicitAny": false,
         "sourceMap": false,
         "outDir": "build"
@@ -23,9 +23,13 @@
         "app/controllers/index.ts",
         "app/controllers/userController.ts",
         "app/controllers/welcomeController.ts",
+        "app/models/index.ts",
+        "app/models/interfaces.ts",
         "app/server.ts",
         "app/services/firebaseServices.ts",
         "app/services/index.ts",
-        "app/services/solidityOps.ts"
+        "app/services/loyaltySchemeServices.ts",
+        "app/services/solidityOps.ts",
+        "app/services/web3Services.ts"
     ]
 }

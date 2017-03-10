@@ -23,14 +23,14 @@
         'BASYXlab': {
             'vault': {
                 'contractAddress': < > ,
-                'contractClass': < > ,
                 'origin': < > ,
                 'creationDate': < > ,
                 'activeUntil': < > ,
                 'description': < > ,
                 'members': {
                     '0xdc0ec5f96a89d1': true
-                }
+                },
+                'status': < > // active, deactivated, pending
             }
         }
     },
