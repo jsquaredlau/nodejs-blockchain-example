@@ -14,7 +14,7 @@ const web3 = new Web3();
 web3.setProvider(new web3.providers.HttpProvider('http://localhost:8545'));
 
 interface ContractParameters {
-    name: string;
+    owner: string;
     description: string;
     origin: string;
     token: string;
@@ -25,7 +25,7 @@ interface ContractParameters {
 }
 
 interface ContractParametersJSON {
-    name: string;
+    owner: string;
     description: string;
     origin: string;
     token: string;
@@ -47,25 +47,30 @@ function decode(json: ContractParametersJSON): ContractParameters {
     });
 }
 
-export function deployContract(business: string, schemeName: string, details: ContractParameters): Q.Promise<{}> {
+export function deployContract(business: string, schemeType: string, schemeName: string, details: ContractParameters): Q.Promise<{}> {
     return Q.Promise((resolve, reject, notify) => {
-        if (schemeName === 'vault') {
+        if (schemeType === 'vault') {
             const accountAddresses = [];
             const accountBalances = [];
             for (var i = 0; i < details.accounts.length; i++) {
                 accountAddresses.push(details.accounts[i][0]);
                 accountBalances.push(details.accounts[i][1]);
             }
-            const contract = new VaultContract('Vault', [details.name, details.token, details.contractKey, details.accounts.length, accountAddresses, accountBalances]);
-        } else if (schemeName === 'merchant') {
+            const contract = new VaultContract('Vault', [schemeName, details.token, details.contractKey, details.accounts.length || 0, accountAddresses, accountBalances]);
+            contract.deployContract(web3.eth.accounts[0], schemeName, details)
+                .then((result) => {
+                    console.log(result);
+                    resolve({ status: 200 });
+                })
+        } else if (schemeType === 'merchant') {
 
             resolve({});
-        } else if (schemeName === 'fx') {
+        } else if (schemeType === 'fx') {
 
             resolve({});
-        } else if (schemeName === 'greeter') {
+        } else if (schemeType === 'greeter') {
             const contract = new HelloWorldContract('greeter', ['COME AT ME BRO!!'])
-            contract.deployContract(web3.eth.accounts[0], 'helloworld')
+            contract.deployContract(web3.eth.accounts[0], 'helloworld', details)
                 .then((result) => {
                     console.log(result);
                     resolve({ status: 'COMPLETE SUCCESS' });
@@ -116,7 +121,7 @@ export class HelloWorldContract extends ContractPaper {
         this.parameters = parameters;
     }
 
-    deployContract(from: number, schemeName: string) {
+    deployContract(from: number, schemeName: string, details: ContractParameters) {
         return Q.Promise((resolve, reject, notify) => {
             this.contract.new(
                 this.parameters[0],
@@ -127,7 +132,7 @@ export class HelloWorldContract extends ContractPaper {
                             console.log("Contract transaction send: TransactionHash: " + contract.transactionHash + " waiting to be mined...");
                         } else {
                             console.log("Contract mined! Address: " + contract.address);
-                            saveDeployedContract(schemeName, contract.address);
+                            saveDeployedContract('HelloWorld', schemeName, contract.address, details);
                         }
 
                     }
@@ -137,118 +142,34 @@ export class HelloWorldContract extends ContractPaper {
     }
 }
 
-export class MyTokenContract extends ContractPaper {
-    public parameters: Array<any>;
-
-    constructor(contractFile: string, contractName: string, parameters: Array<any>) {
-        super(contractFile, contractName);
-        this.parameters = parameters;
-    }
-
-    deployContract(from: number) {
-        return this.contract.new(
-            this.parameters[0], // initialSupply
-            this.parameters[1], // tokenName
-            this.parameters[2], // decimalUnits
-            this.parameters[3], // tokenSymbol
-            { from: from, data: this.bytecode, gas: 1000000 },
-            function(e, contract) {
-                if (!e) {
-                    if (!contract.address) {
-                        console.log("Contract transaction send: TransactionHash: " + contract.transactionHash + " waiting to be mined...");
-                    } else {
-                        console.log("Contract mined! Address: " + contract.address);
-                        saveDeployedContract('bws', contract.address);
-                    }
-
-                }
-            }
-        );
-    }
-}
-
 export class VaultContract extends ContractPaper {
     public parameters: Array<any>;
     constructor(contractName: string, parameters: Array<any>) {
         super('vault', contractName);
         this.parameters = parameters;
     }
-    // string _vaultName, uint256 _accountCount, string _tokenName, uint256 _contractKey, address[] _addresses, uint256[] _balances
-    deployContract(from: number) {
-        return this.contract.new(
-            this.parameters[0], // vaultName
-            this.parameters[1], // tokenName
-            this.parameters[2], // contractKey
-            this.parameters[3], // accountCount
-            this.parameters[4], // addresses
-            this.parameters[5], // balances
-            { from: from, data: this.bytecode, gas: 1000000 },
-            function(e, contract) {
-                if (!e) {
-                    if (!contract.address) {
-                        console.log("Contract transaction send: TransactionHash: " + contract.transactionHash + " waiting to be mined...");
-                    } else {
-                        console.log("Contract mined! Address: " + contract.address);
-                        saveDeployedContract('vault', contract.address);
+
+    deployContract(from: number, schemeName: string, details: ContractParameters) {
+        return Q.Promise((resolve, reject, notify) => {
+            resolve(this.contract.new(
+                schemeName,         // vaultName
+                this.parameters[0], // tokenName
+                this.parameters[1], // contractKey
+                this.parameters[2], // accountCount
+                this.parameters[3], // addresses
+                this.parameters[4], // balances
+                { from: from, data: this.bytecode, gas: 1000000 },
+                function(e, contract) {
+                    if (!e) {
+                        if (!contract.address) {
+                            console.log("Contract transaction send: TransactionHash: " + contract.transactionHash + " waiting to be mined...");
+                        } else {
+                            console.log("Contract mined! Address: " + contract.address);
+                            saveDeployedContract('Vault', schemeName, contract.address, details);
+                        }
                     }
-
                 }
-            }
-        );
-    }
-}
-
-export class BankContract extends ContractPaper {
-    public parameters: Array<any>;
-    constructor(contractFile: string, contractName: string, parameters: Array<any>) {
-        super(contractFile, contractName, ['vault']);
-        this.parameters = parameters;
-    }
-    deployContract(from: number) {
-        return this.contract.new(
-            this.parameters[0], // vaultAddress
-            this.parameters[1], // businessName
-            this.parameters[2], // digitalSignature
-            { from: from, data: this.bytecode, gas: 1000000 },
-            function(e, contract) {
-                if (!e) {
-                    if (!contract.address) {
-                        console.log("Contract transaction send: TransactionHash: " + contract.transactionHash + " waiting to be mined...");
-                    } else {
-                        console.log("Contract mined! Address: " + contract.address);
-                        saveDeployedContract('bank', contract.address);
-                    }
-
-                }
-            }
-        );
-    }
-}
-
-export class BASYXlabBankContract extends ContractPaper {
-    public parameters: Array<any>;
-    constructor(contractFile: string, contractName: string, parameters: Array<any>) {
-        super(contractFile, contractName, ['bank', 'vault']);
-        this.parameters = parameters;
-    }
-    deployContract(from: number) {
-        return this.contract.new(
-            this.parameters[0], // vaultAddress
-            this.parameters[1], // businessName
-            this.parameters[2], // digitalSignature,
-            this.parameters[3],
-            { from: from, data: this.bytecode, gas: 1000000 },
-            function(e, contract) {
-                if (!e) {
-                    if (!contract.address) {
-                        console.log("Contract transaction send: TransactionHash: " + contract.transactionHash + " waiting to be mined...");
-                    } else {
-                        console.log("Contract mined! Address: " + contract.address);
-                        saveDeployedContract('BASYXlabBank', contract.address);
-                    }
-
-                }
-            }
-        );
+            ));
+        });
     }
 }

@@ -25,7 +25,7 @@ const router: Router = Router();
 // });
 
 interface ContractParameters {
-    name: string;
+    owner: string;
     description: string;
     origin: string;
     token: string;
@@ -40,10 +40,11 @@ router.get('/', (req: Request, res: Response) => {
     res.send('Welcome to the User Controller!');
 });
 
-router.post('/:business/:schemeName/deploy', (req: Request, res: Response) => {
-    const { business, schemeName } = req.params;
+router.post('/:business/:schemeType/:schemeName/deploy', (req: Request, res: Response) => {
+    const { business, schemeType, schemeName } = req.params;
     const contractParameters = req.body;
-    deployContract(business, schemeName, contractParameters)
+    contractParameters['owner'] = business;
+    deployContract(business, schemeType, schemeName, contractParameters)
         .then((result) => {
             console.log(result);
             res.send('Contract Deployed!');
@@ -52,7 +53,6 @@ router.post('/:business/:schemeName/deploy', (req: Request, res: Response) => {
             console.log(error);
             res.send('Contract deployment failed. Please try again');
         });
-    res.send('Contract deployed');
 });
 
 router.get('/:business/scheme/list', (req: Request, res: Response) => {

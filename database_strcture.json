@@ -25,12 +25,15 @@
                 'contractAddress': < > ,
                 'origin': < > ,
                 'creationDate': < > ,
-                'activeUntil': < > ,
+                'expirationDate': < > ,
                 'description': < > ,
                 'members': {
                     '0xdc0ec5f96a89d1': true
                 },
-                'status': < > // active, deactivated, pending
+                'region': < > ,
+                'partners': < > ,
+                'token': < > ,
+                'status': < > , // active, deactivated, pending
             }
         }
     },

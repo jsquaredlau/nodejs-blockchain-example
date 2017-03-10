@@ -12,20 +12,34 @@ const config = {
 firebase.initializeApp(config);
 const database = firebase.database();
 
+interface ContractParameters {
+    owner: string;
+    description: string;
+    origin: string;
+    token: string;
+    region: string;
+    contractKey: number;
+    expirationDate?: Date;
+    accounts?: Array<[string, number]>;
+}
 
 // TODO: Parameters => contractType, origin, partners, description, endDate
-export function saveDeployedContract(schemeName: string, contractAddress: number): void {
-    database.ref('programs/' + 'BASYXlab/' + schemeName).set({
-        contractType: 'MyToken',
+export function saveDeployedContract(schemeType: string, schemeName: string, contractAddress: number, details: ContractParameters): void {
+    database.ref('schemes/' + details.owner + '/' + schemeName).set({
+        contractType: schemeType,
         contractAddress: contractAddress,
-        timestamp: Date.now() / 1000 | 0,
-        origin: 'LaaS-1'
-    });
-    database.ref('businesses/' + 'BASYXlab/' + schemeName).set({
+        origin: details.origin,
+        expirationDate: Date.now() / 1000 | 0,
+        activeUntil: null,
+        description: details.description,
+        members: {},
+        region: details.region,
         partners: null,
-        description: 'Basic Token Contract',
-        endDate: null,
-        startDatte: Date.now() / 1000 | 0
+        token: details.token,
+        status: 'pending'
+    });
+    database.ref('businesses/' + details.owner + '/' + 'activeSchemes').set({
+        [schemeName]: true
     });
 }
 
