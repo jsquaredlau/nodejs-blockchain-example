@@ -1,5 +1,6 @@
 // Copyright BASYX.lab
 import { saveDeployedContract } from '../services';
+import { ContractParameters } from '../models';
 import * as Q from 'q';
 
 // LIBRARY IMPORTS
@@ -12,40 +13,6 @@ const objectValues = require('object-values');
 // LIBRARY SETUP
 const web3 = new Web3();
 web3.setProvider(new web3.providers.HttpProvider('http://localhost:8545'));
-
-interface ContractParameters {
-    owner: string;
-    description: string;
-    origin: string;
-    token: string;
-    region: string;
-    contractKey: number;
-    expirationDate?: Date;
-    accounts?: Array<[string, number]>;
-}
-
-interface ContractParametersJSON {
-    owner: string;
-    description: string;
-    origin: string;
-    token: string;
-    region: string;
-    contractKey: number;
-    expirationDate?: string;
-    accounts?: Array<[string, number]>;
-}
-
-function encode(parameters: ContractParameters): ContractParametersJSON {
-    return Object.assign({}, parameters, {
-        expirationDate: parameters.expirationDate.toString()
-    });
-}
-
-function decode(json: ContractParametersJSON): ContractParameters {
-    return Object.assign({}, json, {
-        expirationDate: new Date(json.expirationDate)
-    });
-}
 
 export function deployContract(business: string, schemeType: string, schemeName: string, details: ContractParameters): Q.Promise<{}> {
     return Q.Promise((resolve, reject, notify) => {

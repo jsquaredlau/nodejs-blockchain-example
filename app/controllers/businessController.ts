@@ -4,6 +4,7 @@
 // MODULE IMPORTS
 import { Router, Request, Response } from 'express';
 import { deployContract } from '../services';
+import { ContractParameters } from '../models';
 
 // LIBRARY IMPORTS
 const Web3 = require('web3');
@@ -23,17 +24,6 @@ const router: Router = Router();
 //
 //     res.send('<SOMETHING>');
 // });
-
-interface ContractParameters {
-    owner: string;
-    description: string;
-    origin: string;
-    token: string;
-    region: string;
-    contractKey: number;
-    expirationDate?: Date;
-    accounts?: Array<[string, number]>;
-}
 
 //ROUTES
 router.get('/', (req: Request, res: Response) => {

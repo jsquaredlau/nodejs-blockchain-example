@@ -2,6 +2,8 @@
 import * as firebase from "firebase";
 import * as Q from 'q';
 
+import { ContractParameters } from '../models';
+
 const config = {
     apiKey: "AIzaSyBQNNPknNbL21FqtJLDbZpd9DvC3Nqudnk",
     authDomain: "laas-1.firebaseapp.com",
@@ -11,17 +13,6 @@ const config = {
 };
 firebase.initializeApp(config);
 const database = firebase.database();
-
-interface ContractParameters {
-    owner: string;
-    description: string;
-    origin: string;
-    token: string;
-    region: string;
-    contractKey: number;
-    expirationDate?: Date;
-    accounts?: Array<[string, number]>;
-}
 
 // TODO: Parameters => contractType, origin, partners, description, endDate
 export function saveDeployedContract(schemeType: string, schemeName: string, contractAddress: number, details: ContractParameters): void {
