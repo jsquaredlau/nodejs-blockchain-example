@@ -4,6 +4,7 @@
 // MODULE IMPORTS
 import { Router, Request, Response } from 'express';
 import { deployContract } from '../services';
+import { listDeployedContracts, updateDeployedContract, saveBusinessDetails, deactivateDeployedContract } from '../services';
 import { ContractParameters } from '../models';
 
 // LIBRARY IMPORTS
@@ -37,36 +38,77 @@ router.post('/:business/:schemeType/:schemeName/deploy', (req: Request, res: Res
     deployContract(business, schemeType, schemeName, contractParameters)
         .then((result) => {
             console.log(result);
-            res.send('Contract Deployed!');
+            res.status(200).send('Contract Deployed!');
         })
         .fail((error) => {
             console.log(error);
-            res.send('Contract deployment failed. Please try again');
+            res.status(500).send('Contract deployment failed. Please try again');
         });
 });
 
 router.get('/:business/scheme/list', (req: Request, res: Response) => {
-    res.send();
+    const { business } = req.params;
+    listDeployedContracts(business)
+        .then((result) => {
+            res.status(200).json(result);
+        })
+        .fail((error) => {
+            res.status(500).send(error);
+        });
+
 });
 
-router.get('/:business/scheme/details', (req: Request, res: Response) => {
-    res.send();
+// router.get('/:business/scheme/details', (req: Request, res: Response) => {
+//     res.send();
+// });
+
+router.post('/:business/:schemeName/update', (req: Request, res: Response) => {
+    const { business, schemeName } = req.params;
+    if (req.body !== null || req.body !== undefined) {
+        updateDeployedContract(business, schemeName, req.body)
+            .then((result) => {
+                res.sendStatus(200);
+            })
+            .fail((error) => {
+                res.status(500).send(error);
+            })
+    } else {
+        res.sendStatus(400);
+    }
 });
 
-router.post('/:business/scheme/update', (req: Request, res: Response) => {
-    res.send();
-});
-
-router.post('/:business/scheme/deactivate', (req: Request, res: Response) => {
+router.post('/:business/:schemeName/deactivate', (req: Request, res: Response) => {
+    const { business, schemeName } = req.params;
+    deactivateDeployedContract(business, schemeName)
+        .then((result) => {
+            res.sendStatus(200);
+        })
+        .fail((error) => {
+            res.status(500).json(error);
+        })
     res.send();
 });
 
 router.post('/:business/details', (req: Request, res: Response) => {
-    res.send();
+    const { business } = req.params;
+    saveBusinessDetails(business, req.body)
+        .then((result) => {
+            res.sendStatus(200);
+        })
+        .fail((error) => {
+            res.status(500).json(error);
+        });
 });
 
 router.post('/business/details/update', (req: Request, res: Response) => {
-    res.send();
+    const { business } = req.params;
+    saveBusinessDetails(business, req.body)
+        .then((result) => {
+            res.sendStatus(200);
+        })
+        .fail((error) => {
+            res.status(500).json(error);
+        });
 });
 
 export const BusinessController: Router = router;

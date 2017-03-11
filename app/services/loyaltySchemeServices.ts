@@ -17,21 +17,9 @@ web3.setProvider(new web3.providers.HttpProvider('http://localhost:8545'));
 export function deployContract(business: string, schemeType: string, schemeName: string, details: ContractParameters): Q.Promise<{}> {
     return Q.Promise((resolve, reject, notify) => {
         if (schemeType === 'vault') {
-            const accountAddresses = [];
-            const accountBalances = [];
-            for (var i = 0; i < details.accounts.length; i++) {
-                accountAddresses.push(details.accounts[i][0]);
-                accountBalances.push(details.accounts[i][1]);
-            }
-            const contract = new VaultContract('Vault', [schemeName, details.token, details.contractKey, details.accounts.length || 0, accountAddresses, accountBalances]);
-            contract.deployContract(web3.eth.accounts[0], schemeName, details)
-                .then((result) => {
-                    console.log(result);
-                    resolve({ status: 200 });
-                })
+            vaultDeployment(business, schemeName, details).then((result) => { resolve(result) }).fail((result) => { reject(result) });;
         } else if (schemeType === 'merchant') {
-
-            resolve({});
+            merchantDeployment(business, schemeName, details).then((result) => { resolve(result) }).fail((result) => { reject(result) });
         } else if (schemeType === 'fx') {
 
             resolve({});
@@ -40,11 +28,49 @@ export function deployContract(business: string, schemeType: string, schemeName:
             contract.deployContract(web3.eth.accounts[0], 'helloworld', details)
                 .then((result) => {
                     console.log(result);
-                    resolve({ status: 'COMPLETE SUCCESS' });
+                    resolve({ status: 200 });
                 });
         } else {
-            resolve({ status: 500 });
+            reject({ status: 500 });
         }
+    });
+}
+
+function vaultDeployment(business: string, schemeName: string, details: ContractParameters): Q.Promise<{}> {
+    return Q.Promise((resolve, reject, notify) => {
+        const accountAddresses = [];
+        const accountBalances = [];
+        for (var i = 0; i < details.accounts.length; i++) {
+            accountAddresses.push(details.accounts[i][0]);
+            accountBalances.push(details.accounts[i][1]);
+        }
+        const contract = new VaultContract('Vault', [schemeName, details.token, details.contractKey, details.accounts.length || 0, accountAddresses, accountBalances]);
+        contract.deployContract(web3.eth.accounts[0], schemeName, details)
+            .then((result) => {
+                resolve({ status: 200 });
+            })
+            .fail((error) => {
+                reject({ status: 500 });
+            })
+    });
+};
+
+function merchantDeployment(business: string, schemeName: string, details: ContractParameters): Q.Promise<{}> {
+    return Q.Promise((resolve, reject, notify) => {
+        console.log('in here');
+        if (details.vaultAddress === undefined || details.vaultAddress === null) {
+            reject({ status: 'No vault address supplied' });
+        } else {
+            const contract = new MerchantContract('Merchant', [details.vaultAddress, business, 0]);
+            contract.deployContract(web3.eth.accounts[0], schemeName, details)
+                .then((result) => {
+                    resolve({ status: 200 });
+                })
+                .fail((error) => {
+                    reject({ status: 500 });
+                });
+        }
+
     });
 }
 
@@ -101,7 +127,6 @@ export class HelloWorldContract extends ContractPaper {
                             console.log("Contract mined! Address: " + contract.address);
                             saveDeployedContract('HelloWorld', schemeName, contract.address, details);
                         }
-
                     }
                 }
             );
@@ -133,6 +158,34 @@ export class VaultContract extends ContractPaper {
                         } else {
                             console.log("Contract mined! Address: " + contract.address);
                             saveDeployedContract('Vault', schemeName, contract.address, details);
+                        }
+                    }
+                }
+            ));
+        });
+    }
+}
+
+export class MerchantContract extends ContractPaper {
+    public parameters: Array<any>;
+    constructor(contractName: string, parameters: Array<any>) {
+        super('merchant', contractName, ['merchant', 'vault']);
+        this.parameters = parameters;
+    }
+    deployContract(from: number, schemeName: string, details: ContractParameters): Q.Promise<{}> {
+        return Q.Promise((resolve, reject, notify) => {
+            resolve(this.contract.new(
+                this.parameters[0], // vaultAddress
+                this.parameters[1], // businessName
+                this.parameters[2], // digitalSignature,
+                { from: from, data: this.bytecode, gas: 1000000 },
+                function(e, contract) {
+                    if (!e) {
+                        if (!contract.address) {
+                            console.log("Contract transaction send: TransactionHash: " + contract.transactionHash + " waiting to be mined...");
+                        } else {
+                            console.log("Contract mined! Address: " + contract.address);
+                            saveDeployedContract('Merchant', schemeName, contract.address, details);
                         }
                     }
                 }

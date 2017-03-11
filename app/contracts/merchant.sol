@@ -2,15 +2,7 @@ pragma solidity ^0.4.8;
 
 import "./vault.sol";
 
-/* The Bank Contract
- * Single handedly responsible for looking after it's associated vault and its
- * contents.
- * It will manage the distribution of tokens for a given vault based upon the
- * conditions set out within
- * The relationship between a vault and bank is 1-to-1 (FOR NOW??)
- */
-
-contract Bank {
+contract Merchant {
     /* CONTRACT VARIABLES */
     address owner;
     address vaultLocation;

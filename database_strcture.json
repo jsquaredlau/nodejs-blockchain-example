@@ -43,7 +43,7 @@
             'fbIdentifier': < > ,
             'customerOf': < > ,
             'name': < > ,
-            'memberOf': {
+            'memberOf': { // This value is a maybe. Does a user need to know the schemes they are in?
                 'vault': true
             },
             'inventory': {

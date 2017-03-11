@@ -4,7 +4,6 @@
 // MODULE IMPORTS
 import { Router, Request, Response } from 'express';
 import { ContractPaper, HelloWorldContract, VaultContract } from '../services';
-import { retrieveDeployedContract, removeFirebaseDeployedContract } from '../services';
 
 // LIBRARY IMPORTS
 const Web3 = require('web3');

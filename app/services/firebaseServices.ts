@@ -2,7 +2,7 @@
 import * as firebase from "firebase";
 import * as Q from 'q';
 
-import { ContractParameters } from '../models';
+import { ContractParameters, BusinessDetails } from '../models';
 
 const config = {
     apiKey: "AIzaSyBQNNPknNbL21FqtJLDbZpd9DvC3Nqudnk",
@@ -14,14 +14,14 @@ const config = {
 firebase.initializeApp(config);
 const database = firebase.database();
 
-// TODO: Parameters => contractType, origin, partners, description, endDate
+/* @ CONTRACTS */
 export function saveDeployedContract(schemeType: string, schemeName: string, contractAddress: number, details: ContractParameters): void {
     database.ref('schemes/' + details.owner + '/' + schemeName).set({
         contractType: schemeType,
         contractAddress: contractAddress,
         origin: details.origin,
-        expirationDate: Date.now() / 1000 | 0,
-        activeUntil: null,
+        creationDate: new Date().getTime(),
+        expirationDate: null,
         description: details.description,
         members: {},
         region: details.region,
@@ -29,14 +29,12 @@ export function saveDeployedContract(schemeType: string, schemeName: string, con
         token: details.token,
         status: 'pending'
     });
-    database.ref('businesses/' + details.owner + '/' + 'activeSchemes').set({
-        [schemeName]: true
-    });
+    database.ref('businesses/' + details.owner + '/' + 'activeSchemes').child(schemeName).set(true);
 }
 
-export function retrieveDeployedContract(schemeName: string): any {
+export function retrieveDeployedContract(business: string, schemeName: string): any {
     return Q.Promise((resolve, reject, notify) => {
-        firebase.database().ref('programs/' + 'BASYXlab/').once('value')
+        firebase.database().ref('schemes/' + business + '/' + schemeName).once('value')
             .then(function(snapshot) {
                 if (snapshot.val() !== null) {
                     resolve(snapshot.val());
@@ -49,19 +47,79 @@ export function retrieveDeployedContract(schemeName: string): any {
     });
 }
 
-export function removeFirebaseDeployedContract(schemeName: string): any {
+export function removeDeployedContract(business: string, schemeName: string): Q.Promise<{}> {
     return Q.Promise((resolve, reject, notify) => {
-        firebase.database().ref('programs/' + 'BASYXlab/').once('value')
+        firebase.database().ref('programs/' + business + '/').once('value')
             .then(function(snapshot) {
                 if (snapshot !== null) {
-                    database.ref('businesses/' + 'BASYXlab/' + schemeName).remove();
-                    database.ref('programs/' + 'BASYXlab/' + schemeName).remove();
+                    database.ref('businesses/' + business + '/' + 'activeSchemes/' + schemeName).remove();
+                    database.ref('programs/' + business + '/' + schemeName).remove();
+                    // TODO: Remove membership of affected users
                     resolve(true);
                 } else {
                     reject(new Error('Already Deleted'));
                 }
             }, (error) => {
                 reject(new Error('Retrieval Failed'));
+            })
+    });
+}
+
+export function listDeployedContracts(business: string): Q.Promise<{}> {
+    return Q.Promise((resolve, reject, notify) => {
+        firebase.database().ref('schemes/' + business).once('value')
+            .then((snapshot) => {
+                if (snapshot.val() !== null) {
+                    resolve(snapshot.val());
+                } else {
+                    resolve({});
+                }
+            }, (error) => {
+                reject(new Error('Query for ' + business + ' schemes failed.'));
+            });
+    });
+}
+
+export function updateDeployedContract(business: string, schemeName: string, details: ContractParameters): Q.Promise<{}> {
+    return Q.Promise((resolve, reject, notify) => {
+        const updates = {};
+        updates['schemes/' + business + '/' + schemeName + '/' + 'description'] = details.description;
+        updates['schemes/' + business + '/' + schemeName + '/' + 'token'] = details.token;
+
+        firebase.database().ref().update(updates)
+            .then((result) => {
+                resolve(result);
+            }, (error) => {
+                reject(error);
+            });
+    });
+}
+
+export function deactivateDeployedContract(business: string, schemeName: string): Q.Promise<{}> {
+    return Q.Promise((resolve, reject, notify) => {
+        const updates = {}
+        updates['schemes/' + business + '/' + schemeName + '/' + 'status'] = 'deactivated';
+        updates['businesses/' + business + '/' + 'deactiveSchemes' + '/' + schemeName] = true;
+        updates['businesses/' + business + '/' + 'activeSchemes' + '/' + schemeName] = null;
+
+        firebase.database().ref().update(updates)
+            .then((result) => {
+                resolve(result);
+            }, (error) => {
+                reject(error);
+            });
+    });
+}
+
+/* @ BUSINESSES */
+
+export function saveBusinessDetails(business: string, details: BusinessDetails): Q.Promise<{}> {
+    return Q.Promise((resolve, reject, notify) => {
+        firebase.database().ref('businesses/' + business + '/' + 'details').set(details)
+            .then((result) => {
+                resolve(result);
+            }, (error) => {
+                reject(error);
             })
     });
 }

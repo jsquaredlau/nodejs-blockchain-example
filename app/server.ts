@@ -5,7 +5,7 @@
 import * as express from 'express';
 
 // Import WelcomeController from controllers entry point
-import { WelcomeController, UserController, BusinessController } from './controllers';
+import { UserController, BusinessController } from './controllers';
 
 const bodyParser = require('body-parser');
 
@@ -17,7 +17,7 @@ const port: number = process.env.PORT || 3000;
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-app.use('/', WelcomeController);
+// app.use('/', WelcomeController);
 
 app.use('/api/v1/user', UserController);
 
