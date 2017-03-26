@@ -3,7 +3,7 @@
 
 // MODULE IMPORTS
 import { Router, Request, Response } from 'express';
-import { deployContract } from '../services';
+import { deployContract, runContract } from '../services';
 import { listDeployedContracts, updateDeployedContract, saveBusinessDetails, deactivateDeployedContract } from '../services';
 import { ContractParameters } from '../models';
 
@@ -46,6 +46,33 @@ router.post('/:business/:schemeType/:schemeName/deploy', (req: Request, res: Res
         });
 });
 
+router.post('/:business/:schemeType/:schemeName/deploy', (req: Request, res: Response) => {
+    const { business, schemeType, schemeName } = req.params;
+    const contractParameters = req.body;
+    contractParameters['owner'] = business;
+    deployContract(business, schemeType, schemeName, contractParameters)
+        .then((result) => {
+            console.log(result);
+            res.status(200).send('Contract Deployed!');
+        })
+        .fail((error) => {
+            console.log(error);
+            res.status(500).send('Contract deployment failed. Please try again');
+        });
+});
+
+router.post('/:business/:schemeType/:schemeName/:verb', (req: Request, res: Response) => {
+    const { business, schemeType, schemeName, verb } = req.params;
+    const details = req.body
+    runContract(business, schemeType, schemeName, verb, details)
+        .then((result) => {
+            res.status(200).json(result);
+        })
+        .fail((error) => {
+            res.status(500).json('Failed to execute contract function');
+        });
+});
+
 router.get('/:business/scheme/list', (req: Request, res: Response) => {
     const { business } = req.params;
     listDeployedContracts(business)
@@ -55,7 +82,6 @@ router.get('/:business/scheme/list', (req: Request, res: Response) => {
         .fail((error) => {
             res.status(500).send(error);
         });
-
 });
 
 // router.get('/:business/scheme/details', (req: Request, res: Response) => {

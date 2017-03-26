@@ -36,12 +36,12 @@ contract Merchant {
     }
 
     function refundTokens(address to, uint256 value) returns (uint256 result) {
-        RefundTokens('SUCESS', msg.sender);
+        RefundTokens('SUCCESS', msg.sender);
         return v.increaseBalance(to, value);
     }
 
     function reclaimTokens(address to, uint256 value) returns (uint256 result) {
-        ReclaimTokens('SUCESS', msg.sender);
+        ReclaimTokens('SUCCESS', msg.sender);
         return v.decreaseBalance(to, value);
     }
 

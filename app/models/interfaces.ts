@@ -14,6 +14,9 @@ export interface ContractParameters {
     expirationDate?: Date;
     accounts?: Array<[string, number]>;
     vaultAddress?: string;
+    partnerAddress?: string;
+    toPartnerX?: number;
+    toOwnerX?: number;
 }
 
 export interface BusinessDetails {
