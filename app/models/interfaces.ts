@@ -14,6 +14,7 @@ export interface ContractParameters {
     expirationDate?: Date;
     accounts?: Array<[string, number]>;
     vaultAddress?: string;
+    partnerName?: string;
     partnerAddress?: string;
     toPartnerX?: number;
     toOwnerX?: number;
@@ -21,4 +22,16 @@ export interface ContractParameters {
 
 export interface BusinessDetails {
     description: string;
+}
+
+export interface CollaborationRequestInfo {
+    provider: string;
+    partnerName: string;
+    requestedPartner: string;
+    schemeName: string;
+    contractType: string;
+    contractAddress: string;
+    description: string;
+    instructions: string;
+    requiredInputs: any;
 }

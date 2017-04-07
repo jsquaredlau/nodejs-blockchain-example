@@ -4,8 +4,8 @@
 // MODULE IMPORTS
 import { Router, Request, Response } from 'express';
 import { deployContract, runContract } from '../services';
-import { listDeployedContracts, updateDeployedContract, saveBusinessDetails, deactivateDeployedContract } from '../services';
-import { ContractParameters } from '../models';
+import { listDeployedContracts, updateDeployedContract, saveBusinessDetails, deactivateDeployedContract, parseCollaborationRequest } from '../services';
+import { ContractParameters, CollaborationRequestInfo } from '../models';
 
 // LIBRARY IMPORTS
 const Web3 = require('web3');
@@ -46,20 +46,40 @@ router.post('/:business/:schemeType/:schemeName/deploy', (req: Request, res: Res
         });
 });
 
-router.post('/:business/:schemeType/:schemeName/deploy', (req: Request, res: Response) => {
-    const { business, schemeType, schemeName } = req.params;
-    const contractParameters = req.body;
-    contractParameters['owner'] = business;
-    deployContract(business, schemeType, schemeName, contractParameters)
+router.post('/collaboration/request', (req: Request, res: Response) => {
+    const collabInfo: CollaborationRequestInfo = req.body;
+    parseCollaborationRequest(
+        collabInfo.provider,
+        collabInfo.partnerName,
+        collabInfo.requestedPartner,
+        collabInfo.schemeName,
+        collabInfo.contractType,
+        collabInfo.contractAddress,
+        collabInfo.description,
+        collabInfo.instructions,
+        collabInfo.requiredInputs)
         .then((result) => {
-            console.log(result);
-            res.status(200).send('Contract Deployed!');
+            res.status(200).send('Request received');
         })
         .fail((error) => {
-            console.log(error);
-            res.status(500).send('Contract deployment failed. Please try again');
-        });
+            res.status(400).send('Request rejected');
+        })
+
 });
+// router.post('/:business/:schemeType/:schemeName/deploy', (req: Request, res: Response) => {
+//     const { business, schemeType, schemeName } = req.params;
+//     const contractParameters = req.body;
+//     contractParameters['owner'] = business;
+//     deployContract(business, schemeType, schemeName, contractParameters)
+//         .then((result) => {
+//             console.log(result);
+//             res.status(200).send('Contract Deployed!');
+//         })
+//         .fail((error) => {
+//             console.log(error);
+//             res.status(500).send('Contract deployment failed. Please try again');
+//         });
+// });
 
 router.post('/:business/:schemeType/:schemeName/:verb', (req: Request, res: Response) => {
     const { business, schemeType, schemeName, verb } = req.params;

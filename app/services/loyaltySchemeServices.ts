@@ -1,5 +1,5 @@
 // Copyright BASYX.lab
-import { saveDeployedContract, retrieveDeployedContract } from '../services';
+import { saveDeployedContract, retrieveDeployedContract, queueCollaborationRequest } from '../services';
 import { ContractParameters } from '../models';
 import * as Q from 'q';
 
@@ -159,8 +159,21 @@ export function runContract(business: string, schemeType: string, schemeName: st
     });
 }
 
-//0x036441ca89ec63122e96abbf11e8b50a6a1d0f3a -> N
-//0x036441ca89ec63122e96abbf11e8b50a6a1d0f3a -> B
+export function parseCollaborationRequest(
+    serviceProvider: string,
+    partnerName: string,
+    requestedPartner: string,
+    schemeName: string,
+    contractType: string,
+    contractAddress: string,
+    description: string,
+    instructions: string,
+    requiredInputs: any
+): Q.Promise<{}> {
+    return Q.Promise((resolve, reject, notify) => {
+        resolve(queueCollaborationRequest(serviceProvider, partnerName, requestedPartner, schemeName, contractType, contractAddress, description, instructions, requiredInputs));
+    });
+}
 
 export class ContractPaper {
     public contractFile: string;

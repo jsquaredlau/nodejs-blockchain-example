@@ -16,20 +16,43 @@ const database = firebase.database();
 
 /* @ CONTRACTS */
 export function saveDeployedContract(schemeType: string, schemeName: string, contractAddress: number, details: ContractParameters): void {
+    if (schemeType === 'vault') {
+        saveVaultContract(schemeName, contractAddress, details);
+    } else if (schemeType === 'fx') {
+        saveFxContract(schemeName, contractAddress, details);
+    }
+}
+
+function saveVaultContract(schemeName: string, contractAddress: number, details: ContractParameters): void {
     database.ref('schemes/' + details.owner + '/' + schemeName).set({
-        contractType: schemeType,
+        contractType: 'vault',
         contractAddress: contractAddress,
-        origin: details.origin,
         creationDate: new Date().getTime(),
-        expirationDate: null,
         description: details.description,
-        members: {},
         region: details.region,
-        partners: null,
-        token: details.token,
-        status: 'pending'
+        token: details.token
     });
     database.ref('businesses/' + details.owner + '/' + 'activeSchemes').child(schemeName).set(true);
+}
+
+function saveFxContract(schemeName: string, contractAddress: number, details: ContractParameters): void {
+    database.ref('schemes/' + details.owner + '/' + schemeName).set({
+        contractType: 'fx',
+        contractAddress: contractAddress,
+        // origin: details.origin,
+        creationDate: new Date().getTime(),
+        // expirationDate: null,
+        description: details.description,
+        // members: {},
+        // region: details.region,
+        // partners: null,
+        // token: details.token,
+        partner: details.partnerName,
+        toPartnerX: details.toPartnerX,
+        toOwnerX: details.toOwnerX,
+        status: 'pending'
+    });
+    database.ref('businesses/' + details.owner + '/' + 'pendingSchemes').child(schemeName).set(true);
 }
 
 export function retrieveDeployedContract(business: string, schemeName: string): any {
@@ -122,4 +145,20 @@ export function saveBusinessDetails(business: string, details: BusinessDetails):
                 reject(error);
             })
     });
+}
+
+export function queueCollaborationRequest(serviceProvider: string, partnerName: string, requestedPartner: string, schemeName: string, contractType: string, contractAddress: string, description: string, instructions: string, requiredInputs: string): boolean {
+    database.ref('schemes/' + requestedPartner + '/collaborationRequests/' + schemeName).set({
+        serviceProvider: serviceProvider,
+        partnerName: partnerName,
+        schemeName: schemeName,
+        contractType: contractType,
+        contractAddress: contractAddress,
+        requestDate: new Date().getTime(),
+        description: description,
+        instructions: instructions,
+        requiredInputs: requiredInputs
+    });
+    database.ref('businesses/' + requestedPartner + '/' + 'collaborationRequests').child(schemeName).set(true);
+    return true;
 }
