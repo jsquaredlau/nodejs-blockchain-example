@@ -19,11 +19,10 @@ contract FX {
     event ContractVoiding(string status, address indexed voidedBy);
 
     /* CONSTRUCTOR */
-    function FX(address _vaultLocation, address _partnerBusiness, uint256 _toPartnerX, uint256 _toOwnerX) {
+    function FX(address _vaultLocation, uint256 _toPartnerX, uint256 _toOwnerX) {
         owner = msg.sender;
-        partnerBusiness = _partnerBusiness;
+        /*partnerBusiness = _partnerBusiness;*/
         agreement[msg.sender] = true;
-        agreement[_partnerBusiness] = false;
         toPartnerX = _toPartnerX;
         toOwnerX = _toOwnerX;
         vOwnerBusiness = Vault(_vaultLocation);
@@ -51,12 +50,12 @@ contract FX {
     }
 
     function acceptAggreement(address businessAddress, address _partnerVaultLocation) {
-        if (businessAddress == partnerBusiness) {
-            validatedAt = block.timestamp;
-            vPartnerBusiness = Vault(_partnerVaultLocation);
-            agreement[msg.sender] = true;
-            ContractSigning('SUCCESS', msg.sender);
-        }
+        partnerBusiness = businessAddress;
+        agreement[businessAddress] = true;
+        validatedAt = block.timestamp;
+        vPartnerBusiness = Vault(_partnerVaultLocation);
+        agreement[msg.sender] = true;
+        ContractSigning('SUCCESS', msg.sender);
     }
 
     function voidAgreement() {

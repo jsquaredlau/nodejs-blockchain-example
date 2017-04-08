@@ -21,6 +21,7 @@
     "object-values": "^1.0.0",
     "q": "^1.4.1",
     "read-file": "^0.2.0",
+    "request": "^2.81.0",
     "solc": "^0.4.8",
     "trim-newlines": "^1.0.0",
     "web3": "^0.18.2"

@@ -47,23 +47,30 @@ router.post('/:business/:schemeType/:schemeName/deploy', (req: Request, res: Res
 });
 
 router.post('/collaboration/request', (req: Request, res: Response) => {
-    const collabInfo: CollaborationRequestInfo = req.body;
+    const collabInfo = req.body;
     parseCollaborationRequest(
         collabInfo.provider,
-        collabInfo.partnerName,
+        collabInfo.requester,
         collabInfo.requestedPartner,
         collabInfo.schemeName,
         collabInfo.contractType,
         collabInfo.contractAddress,
         collabInfo.description,
         collabInfo.instructions,
-        collabInfo.requiredInputs)
+        collabInfo.requiredInputs,
+        collabInfo.toPartnerFx,
+        collabInfo.toOwnerFx)
         .then((result) => {
             res.status(200).send('Request received');
         })
         .fail((error) => {
             res.status(400).send('Request rejected');
         })
+});
+
+router.post('/collaboration/:business/accept/:scheme', (req: Request, res: Response) => {
+    const { business, scheme } = req.params;
+    const contractParameters = req.body;
 
 });
 // router.post('/:business/:schemeType/:schemeName/deploy', (req: Request, res: Response) => {

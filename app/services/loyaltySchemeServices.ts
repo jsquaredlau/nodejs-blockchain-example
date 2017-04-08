@@ -1,5 +1,5 @@
 // Copyright BASYX.lab
-import { saveDeployedContract, retrieveDeployedContract, queueCollaborationRequest } from '../services';
+import { saveDeployedContract, retrieveDeployedContract, queueCollaborationRequest, changeContractStatus } from '../services';
 import { ContractParameters } from '../models';
 import * as Q from 'q';
 
@@ -8,13 +8,14 @@ const Web3 = require('web3');
 const solc = require('solc');
 const read = require('read-file');
 const path = require('path');
+const request = require('request');
 const objectValues = require('object-values');
 
 // LIBRARY SETUP
 const web3 = new Web3();
 web3.setProvider(new web3.providers.HttpProvider('http://localhost:8545'));
 
-export function deployContract(business: string, schemeType: string, schemeName: string, details: ContractParameters): Q.Promise<{}> {
+export function deployContract(business: string, schemeType: string, schemeName: string, details): Q.Promise<{}> {
     return Q.Promise((resolve, reject, notify) => {
         if (schemeType === 'vault') {
             vaultDeployment(business, schemeName, details).then((result) => { resolve(result) }).fail((result) => { reject(result) });
@@ -35,12 +36,12 @@ export function deployContract(business: string, schemeType: string, schemeName:
     });
 }
 
-function fxDeployment(business: string, schemeName: string, details: ContractParameters): Q.Promise<{}> {
+function fxDeployment(business: string, schemeName: string, details): Q.Promise<{}> {
     return Q.Promise((resolve, reject, notify) => {
-        if (details.vaultAddress === undefined || details.partnerAddress === undefined || details.toPartnerX === undefined || details.toOwnerX === undefined) {
+        if (details.vaultAddress === undefined || details.toPartnerFx === undefined || details.toOwnerFx === undefined) {
             reject({ status: 'Insufficient parameters passed' });
         } else {
-            const contract = new FxContract('FX', [details.vaultAddress, details.partnerAddress, details.toPartnerX, details.toOwnerX]);
+            const contract = new FxContract('FX', [details.vaultAddress, details.toPartnerFx, details.toOwnerFx]);
             contract.deployContract(web3.eth.accounts[0], schemeName, details)
                 .then((result) => {
                     resolve({ status: 200 });
@@ -160,18 +161,75 @@ export function runContract(business: string, schemeType: string, schemeName: st
 }
 
 export function parseCollaborationRequest(
-    serviceProvider: string,
-    partnerName: string,
+    provider: string,
+    requester: string,
     requestedPartner: string,
     schemeName: string,
     contractType: string,
     contractAddress: string,
     description: string,
     instructions: string,
-    requiredInputs: any
+    requiredInputs: any,
+    toPartnerFx: number,
+    toOwnerFx: number,
 ): Q.Promise<{}> {
     return Q.Promise((resolve, reject, notify) => {
-        resolve(queueCollaborationRequest(serviceProvider, partnerName, requestedPartner, schemeName, contractType, contractAddress, description, instructions, requiredInputs));
+        resolve(queueCollaborationRequest(
+            provider,
+            requester,
+            requestedPartner,
+            schemeName,
+            contractType,
+            contractAddress,
+            description,
+            instructions,
+            requiredInputs,
+            toPartnerFx,
+            toOwnerFx
+        ));
+    });
+}
+
+export function acceptCooperation(business: string, vaultAddress: string, schemeName: string): Q.Promise<{}> {
+    return Q.Promise((resolve, reject, notify) => {
+        const fx = new ContractPaper('fx', 'FX', ['fx', 'vault']);
+        retrieveDeployedContract(business, schemeName)
+            .then((snapshot) => {
+                const contractInstance = fx.contract.at(snapshot.contractAddress);
+                const agreementEvent = contractInstance.AcceptAggreement();
+                // const collectionEvent = eval('contractInstance.' + 'IncreaseBalance()');
+                agreementEvent.watch((error, result) => {
+                    if (error) {
+                        console.log(error);
+                    } else {
+                        console.log(result.args);
+                        agreementEvent.stopWatching();
+                    }
+                });
+
+                const transferEvent = contractInstance.Transfer();
+                transferEvent.watch((error, result) => {
+                    if (error) {
+                        console.log(error);
+                    } else {
+                        console.log(result.args);
+                        //TODO: add transfer details to database
+                        //TODO: stopwatching on deactivate
+                    }
+                })
+                if (business === 'BASYXLab') {
+                    contractInstance.acceptAggreement(web3.eth.accounts[0], vaultAddress);
+                } else if (business === 'NeikidFyre') {
+                    contractInstance.acceptAggreement(web3.eth.accounts[1], vaultAddress);
+                } else {
+                    contractInstance.acceptAggreement(web3.eth.accounts[2], vaultAddress);
+                }
+
+                resolve({ status: 200 })
+            })
+            .fail((error) => {
+                reject(error);
+            });
     });
 }
 
@@ -216,13 +274,13 @@ export class FxContract extends ContractPaper {
         console.log(parameters);
     }
 
-    deployContract(from: number, schemeName: string, details: ContractParameters): Q.Promise<{}> {
+    deployContract(from: number, schemeName: string, details): Q.Promise<{}> {
         return Q.Promise((resolve, reject, notify) => {
             resolve(this.contract.new(
                 this.parameters[0],// vaultLocation
                 this.parameters[1],// partnerBusiness
-                this.parameters[2],// toPartnerX
-                this.parameters[3],// toOwnerX
+                this.parameters[2],// toPartnerFx
+                this.parameters[3],// toOwnerFx
                 { from: from, data: this.bytecode, gas: 1000000 },
                 function(e, contract) {
                     if (!e) {
@@ -231,6 +289,43 @@ export class FxContract extends ContractPaper {
                         } else {
                             console.log("Contract mined! Address: " + contract.address);
                             saveDeployedContract('fx', schemeName, contract.address, details);
+                            const collaborationRequestObject = {
+                                provider: 'LaaS1',
+                                requester: details.requester,
+                                requestedPartner: details.requestedPartner,
+                                schemeName: details.schemeName,
+                                contractType: 'fx',
+                                contractAddress: contract.address,
+                                description: details.description,
+                                instructions: details.instructions,
+                                requiredInputs: details.requiredInputs,
+                                toPartnerFx: details.toPartnerFx,
+                                toOwnerFx: details.toOwnerFx
+                            }
+                            const fx = new ContractPaper('fx', 'FX', ['fx', 'vault']);
+                            const contractInstance = fx.contract.at(contract.address);
+                            const signingEvent = eval('contractInstance.' + 'ContractSigning()');
+                            signingEvent.watch((error, result) => {
+                                if (error) {
+                                    console.log(error);
+                                } else {
+                                    changeContractStatus(schemeName, details.requester, 'active');
+                                    signingEvent.stopWatching();
+                                }
+                            });
+                            const voidingEvent = eval('contractInstance.' + 'ContractVoiding()');
+                            voidingEvent.watch((error, result) => {
+                                if (error) {
+                                    console.log(error);
+                                } else {
+                                    changeContractStatus(schemeName, details.requester, 'deactivated');
+                                    voidingEvent.stopWatching();
+                                }
+                            });
+                            request.post('http://localhost:3000/collaboration/requests').json().body(collaborationRequestObject)
+                                .on('body', (body) => {
+                                    console.log(body);
+                                });
                         }
                     }
                 }

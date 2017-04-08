@@ -35,24 +35,40 @@ function saveVaultContract(schemeName: string, contractAddress: number, details:
     database.ref('businesses/' + details.owner + '/' + 'activeSchemes').child(schemeName).set(true);
 }
 
-function saveFxContract(schemeName: string, contractAddress: number, details: ContractParameters): void {
-    database.ref('schemes/' + details.owner + '/' + schemeName).set({
-        contractType: 'fx',
+function saveFxContract(schemeName: string, contractAddress: number, details): void {
+    database.ref('schemes/' + details.requester + '/' + schemeName).set({
+        requestedPartner: details.requestedPartner,
+        contractType: details.contractType,
         contractAddress: contractAddress,
-        // origin: details.origin,
-        creationDate: new Date().getTime(),
-        // expirationDate: null,
         description: details.description,
-        // members: {},
-        // region: details.region,
-        // partners: null,
-        // token: details.token,
-        partner: details.partnerName,
+        instructions: details.instructions,
+        requiredInputs: details.requiredInputs,
         toPartnerX: details.toPartnerX,
         toOwnerX: details.toOwnerX,
-        status: 'pending'
+        creationDate: new Date().getTime(),
+        status: 'pending',
+        vaultAddress: contractAddress
     });
     database.ref('businesses/' + details.owner + '/' + 'pendingSchemes').child(schemeName).set(true);
+}
+
+export function recordCollaborationAgreement(business: string, schemeName: string) {
+    database.ref('businesses/' + business + '/' + 'activeSchemes').child(schemeName).set(true);
+    database.ref('businesses/' + business + '/' + 'collaborationRequests').child(schemeName).remove();
+    return true;
+}
+
+export function changeContractStatus(schemeName: string, owner: string, status: string): void {
+    if (status === 'active') {
+        database.ref('schemes/' + owner + '/' + schemeName).child('status').set(status);
+        database.ref('business/' + owner + '/activeSchemes').child(schemeName).set(true);
+        database.ref('business/' + owner + '/pendingSchemes').child(schemeName).remove();
+    } else if (status === 'deactivated') {
+        database.ref('schemes/' + owner + '/' + schemeName).child('status').set(status);
+        database.ref('business/' + owner + '/deactiveSchemes').child(schemeName).set(true);
+        database.ref('business/' + owner + '/activeSchemes').child(schemeName).remove();
+    }
+
 }
 
 export function retrieveDeployedContract(business: string, schemeName: string): any {
@@ -147,17 +163,19 @@ export function saveBusinessDetails(business: string, details: BusinessDetails):
     });
 }
 
-export function queueCollaborationRequest(serviceProvider: string, partnerName: string, requestedPartner: string, schemeName: string, contractType: string, contractAddress: string, description: string, instructions: string, requiredInputs: string): boolean {
+export function queueCollaborationRequest(provider: string, requester: string, requestedPartner: string, schemeName: string, contractType: string, contractAddress: string, description: string, instructions: string, requiredInputs: string, toPartnerFx: number, toOwnerFx: number): boolean {
     database.ref('schemes/' + requestedPartner + '/collaborationRequests/' + schemeName).set({
-        serviceProvider: serviceProvider,
-        partnerName: partnerName,
+        provider: provider,
+        requester: requester,
         schemeName: schemeName,
         contractType: contractType,
         contractAddress: contractAddress,
-        requestDate: new Date().getTime(),
         description: description,
         instructions: instructions,
-        requiredInputs: requiredInputs
+        requiredInputs: requiredInputs,
+        toPartnerFx: toPartnerFx,
+        toOwnerFx: toOwnerFx,
+        requestDate: new Date().getTime(),
     });
     database.ref('businesses/' + requestedPartner + '/' + 'collaborationRequests').child(schemeName).set(true);
     return true;
