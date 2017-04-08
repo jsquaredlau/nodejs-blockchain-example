@@ -15,15 +15,15 @@ const objectValues = require('object-values');
 const web3 = new Web3();
 web3.setProvider(new web3.providers.HttpProvider('http://localhost:8545'));
 
-export function deployContract(business: string, schemeType: string, schemeName: string, details): Q.Promise<{}> {
+export function deployContract(business: string, contractType: string, schemeName: string, details): Q.Promise<{}> {
     return Q.Promise((resolve, reject, notify) => {
-        if (schemeType === 'vault') {
+        if (contractType === 'vault') {
             vaultDeployment(business, schemeName, details).then((result) => { resolve(result) }).fail((result) => { reject(result) });
-        } else if (schemeType === 'merchant') {
+        } else if (contractType === 'merchant') {
             merchantDeployment(business, schemeName, details).then((result) => { resolve(result) }).fail((result) => { reject(result) });
-        } else if (schemeType === 'fx') {
+        } else if (contractType === 'fx') {
             fxDeployment(business, schemeName, details).then((result) => { resolve(result) }).fail((result) => { reject(result) });
-        } else if (schemeType === 'greeter') {
+        } else if (contractType === 'greeter') {
             const contract = new HelloWorldContract('greeter', ['COME AT ME BRO!!'])
             contract.deployContract(web3.eth.accounts[0], 'helloworld', details)
                 .then((result) => {
@@ -37,6 +37,7 @@ export function deployContract(business: string, schemeType: string, schemeName:
 }
 
 function fxDeployment(business: string, schemeName: string, details): Q.Promise<{}> {
+    console.log(details);
     return Q.Promise((resolve, reject, notify) => {
         if (details.vaultAddress === undefined || details.toPartnerFx === undefined || details.toOwnerFx === undefined) {
             reject({ status: 'Insufficient parameters passed' });
@@ -53,15 +54,23 @@ function fxDeployment(business: string, schemeName: string, details): Q.Promise<
     });
 }
 
-function vaultDeployment(business: string, schemeName: string, details: ContractParameters): Q.Promise<{}> {
+function vaultDeployment(business: string, schemeName: string, details): Q.Promise<{}> {
     return Q.Promise((resolve, reject, notify) => {
-        const accountAddresses = [];
-        const accountBalances = [];
-        for (var i = 0; i < details.accounts.length; i++) {
-            accountAddresses.push(details.accounts[i][0]);
-            accountBalances.push(details.accounts[i][1]);
-        }
-        const contract = new VaultContract('Vault', [schemeName, details.token, details.contractKey, details.accounts.length || 0, accountAddresses, accountBalances]);
+        // const accountAddresses = [];
+        // const accountBalances = [];
+        // for (var i = 0; i < details.accounts.length; i++) {
+        //     accountAddresses.push(details.accounts[i][0]);
+        //     accountBalances.push(details.accounts[i][1]);
+        // }
+        const contract = new VaultContract('Vault', [
+            schemeName,
+            details.token
+            // details.contractKey,
+            // details.accounts.length || 0,
+            // accountAddresses,
+            // accountBalances
+        ]
+        );
         contract.deployContract(web3.eth.accounts[0], schemeName, details)
             .then((result) => {
                 resolve({ status: 200 });
@@ -322,10 +331,18 @@ export class FxContract extends ContractPaper {
                                     voidingEvent.stopWatching();
                                 }
                             });
-                            request.post('http://localhost:3000/collaboration/requests').json().body(collaborationRequestObject)
-                                .on('body', (body) => {
-                                    console.log(body);
-                                });
+                            request({
+                                url: 'http://localhost:3000/api/v1/business/collaboration/request',
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Accept': 'application/json'
+                                },
+                                json: true,
+                                body: collaborationRequestObject
+                            }, (err, res, body) => {
+                                console.log(body);
+                            });
                         }
                     }
                 }
@@ -369,15 +386,15 @@ export class VaultContract extends ContractPaper {
         this.parameters = parameters;
     }
 
-    deployContract(from: number, schemeName: string, details: ContractParameters) {
+    deployContract(from: number, schemeName: string, details) {
         return Q.Promise((resolve, reject, notify) => {
             resolve(this.contract.new(
                 schemeName,         // vaultName
                 this.parameters[0], // tokenName
-                this.parameters[1], // contractKey
-                this.parameters[2], // accountCount
-                this.parameters[3], // addresses
-                this.parameters[4], // balances
+                // this.parameters[1], // contractKey
+                // this.parameters[2], // accountCount
+                // this.parameters[3], // addresses
+                // this.parameters[4], // balances
                 { from: from, data: this.bytecode, gas: 1000000 },
                 function(e, contract) {
                     if (!e) {
@@ -385,7 +402,7 @@ export class VaultContract extends ContractPaper {
                             console.log("Contract transaction send: TransactionHash: " + contract.transactionHash + " waiting to be mined...");
                         } else {
                             console.log("Contract mined! Address: " + contract.address);
-                            saveDeployedContract('Vault', schemeName, contract.address, details);
+                            saveDeployedContract('vault', schemeName, contract.address, details);
                         }
                     }
                 }

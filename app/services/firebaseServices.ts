@@ -15,21 +15,21 @@ firebase.initializeApp(config);
 const database = firebase.database();
 
 /* @ CONTRACTS */
-export function saveDeployedContract(schemeType: string, schemeName: string, contractAddress: number, details: ContractParameters): void {
-    if (schemeType === 'vault') {
+export function saveDeployedContract(contractType: string, schemeName: string, contractAddress: number, details: ContractParameters): void {
+    if (contractType === 'vault') {
         saveVaultContract(schemeName, contractAddress, details);
-    } else if (schemeType === 'fx') {
+    } else if (contractType === 'fx') {
         saveFxContract(schemeName, contractAddress, details);
     }
 }
 
-function saveVaultContract(schemeName: string, contractAddress: number, details: ContractParameters): void {
+function saveVaultContract(schemeName: string, contractAddress: number, details): void {
     database.ref('schemes/' + details.owner + '/' + schemeName).set({
         contractType: 'vault',
         contractAddress: contractAddress,
         creationDate: new Date().getTime(),
         description: details.description,
-        region: details.region,
+        // region: details.region,
         token: details.token
     });
     database.ref('businesses/' + details.owner + '/' + 'activeSchemes').child(schemeName).set(true);
@@ -43,8 +43,8 @@ function saveFxContract(schemeName: string, contractAddress: number, details): v
         description: details.description,
         instructions: details.instructions,
         requiredInputs: details.requiredInputs,
-        toPartnerX: details.toPartnerX,
-        toOwnerX: details.toOwnerX,
+        toPartnerX: details.toPartnerFx,
+        toOwnerX: details.toOwnerFx,
         creationDate: new Date().getTime(),
         status: 'pending',
         vaultAddress: contractAddress

@@ -16,18 +16,18 @@ contract Vault {
     event ManipulateBalance(string status, address indexed from, address indexed to, uint256 oldBalance, uint256 newBalance);
 
     /* CONSTRUCTOR */
-    function Valut(string _vaultName, string _tokenName, uint256 _contractKey, uint256 _accountCount, address[] _addresses, uint256[] _balances) {
+    function Valut(string _vaultName, string _tokenName) {
         owner = msg.sender;
         vaultName = _vaultName;
         tokenName = _tokenName;
-        contractKey = _contractKey;
+        /*contractKey = _contractKey;*/
 
         // TODO: put in a safeguard
-        if (_addresses.length == _accountCount && _balances.length == _accountCount) {
+        /*if (_addresses.length == _accountCount && _balances.length == _accountCount) {
             for (uint8 i = 0; i < _accountCount; i++) {
                 balanceOf[_addresses[i]] = _balances[i];
             }
-        }
+        }*/
     }
 
     /* FUNCTIONS */

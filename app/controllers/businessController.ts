@@ -31,11 +31,11 @@ router.get('/', (req: Request, res: Response) => {
     res.send('Welcome to the User Controller!');
 });
 
-router.post('/:business/:schemeType/:schemeName/deploy', (req: Request, res: Response) => {
-    const { business, schemeType, schemeName } = req.params;
+router.post('/:business/:contractType/:schemeName/deploy', (req: Request, res: Response) => {
+    const { business, contractType, schemeName } = req.params;
     const contractParameters = req.body;
     contractParameters['owner'] = business;
-    deployContract(business, schemeType, schemeName, contractParameters)
+    deployContract(business, contractType, schemeName, contractParameters)
         .then((result) => {
             console.log(result);
             res.status(200).send('Contract Deployed!');
