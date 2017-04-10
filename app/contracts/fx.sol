@@ -15,8 +15,8 @@ contract FX {
     Vault vPartnerBusiness;
 
     event Transfer(string status, address indexed initiator, address indexed fromAccount, address indexed toAccount, uint256 amountConverted, uint256 amountReceived);
-    event ContractSigning(string status, address indexed acceptedBy);
-    event ContractVoiding(string status, address indexed voidedBy);
+    event AcceptAgreement(string status, address indexed acceptedBy);
+    event VoidAgreement(string status, address indexed voidedBy);
 
     /* CONSTRUCTOR */
     function FX(address _vaultLocation, uint256 _toPartnerX, uint256 _toOwnerX) {
@@ -29,7 +29,7 @@ contract FX {
     }
 
     function transfer (uint256 amountToConvert, address fromAccount, address toAccount) {
-        if (aggreementValid()) {
+        if (agreementValid()) {
             uint256 amountReceivable;
             if (msg.sender == owner) {
                 amountReceivable = toPartnerX * ( amountToConvert / toOwnerX );
@@ -49,22 +49,21 @@ contract FX {
         }
     }
 
-    function acceptAggreement(address businessAddress, address _partnerVaultLocation) {
+    function acceptAgreement(address businessAddress, address _partnerVaultLocation) {
         partnerBusiness = businessAddress;
         agreement[businessAddress] = true;
         validatedAt = block.timestamp;
         vPartnerBusiness = Vault(_partnerVaultLocation);
-        agreement[msg.sender] = true;
-        ContractSigning('SUCCESS', msg.sender);
+        AcceptAgreement('SUCCESS', msg.sender);
     }
 
     function voidAgreement() {
         agreement[msg.sender] = false;
         voidedAt = block.timestamp;
-        ContractVoiding('SUCCESS', msg.sender);
+        VoidAgreement('SUCCESS', msg.sender);
     }
 
-    function aggreementValid() private returns (bool status){
+    function agreementValid() private returns (bool status){
         if (agreement[owner] == true && agreement[partnerBusiness] == true) {
             return true;
         } else {

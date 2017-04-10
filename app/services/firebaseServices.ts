@@ -150,6 +150,38 @@ export function deactivateDeployedContract(business: string, schemeName: string)
     });
 }
 
+export function findContractAddress(business: string, schemeName: string, collabRequest?: boolean): Q.Promise<any> {
+    return Q.Promise((resolve, reject, notify) => {
+        if (collabRequest) {
+            firebase.database().ref('schemes/' + business + '/collaborationRequests/' + schemeName + '/contractAddress').once('value')
+                .then((snapshot) => {
+                    if (snapshot.val() !== null) {
+                        resolve(snapshot.val());
+                    } else {
+                        resolve(null);
+                    }
+                }, (errror) => {
+                    reject(new Error('Query for ' + schemeName + ' contract address failed.'));
+                });
+        } else {
+            firebase.database().ref('schemes/' + business + '/' + schemeName + '/contractAddress').once('value')
+                .then((snapshot) => {
+                    if (snapshot.val() !== null) {
+                        resolve(snapshot.val());
+                    } else {
+                        resolve(null);
+                    }
+                }, (error) => {
+                    reject(new Error('Query for ' + schemeName + ' contract address failed.'));
+                });
+        }
+    });
+}
+
+export function changeCollabRequstStatus(business: string, schemeName: string): void {
+    firebase.database().ref('/businesses/' + business + '/' + schemeName).set(true);
+    firebase.database().ref('/businesses/' + business + '/collaborationRequests').child(schemeName).remove();
+}
 /* @ BUSINESSES */
 
 export function saveBusinessDetails(business: string, details: BusinessDetails): Q.Promise<{}> {

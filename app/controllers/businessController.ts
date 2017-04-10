@@ -4,7 +4,7 @@
 // MODULE IMPORTS
 import { Router, Request, Response } from 'express';
 import { deployContract, runContract } from '../services';
-import { listDeployedContracts, updateDeployedContract, saveBusinessDetails, deactivateDeployedContract, parseCollaborationRequest } from '../services';
+import { listDeployedContracts, updateDeployedContract, saveBusinessDetails, deactivateDeployedContract, parseCollaborationRequest, parseCollaborationAcceptance } from '../services';
 import { ContractParameters, CollaborationRequestInfo } from '../models';
 
 // LIBRARY IMPORTS
@@ -70,7 +70,15 @@ router.post('/collaboration/request', (req: Request, res: Response) => {
 
 router.post('/collaboration/:business/accept/:scheme', (req: Request, res: Response) => {
     const { business, scheme } = req.params;
-    const contractParameters = req.body;
+    const postValues = req.body;
+    parseCollaborationAcceptance(business, scheme.replace('%20', ' '), postValues)
+        .then((result) => {
+            res.status(200).send('Collaboration Complete');
+        })
+        .fail((error) => {
+            res.status(500).send(error);
+        });
+
 
 });
 // router.post('/:business/:schemeType/:schemeName/deploy', (req: Request, res: Response) => {

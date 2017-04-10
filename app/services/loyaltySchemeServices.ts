@@ -1,5 +1,5 @@
 // Copyright BASYX.lab
-import { saveDeployedContract, retrieveDeployedContract, queueCollaborationRequest, changeContractStatus } from '../services';
+import { saveDeployedContract, retrieveDeployedContract, queueCollaborationRequest, changeContractStatus, findContractAddress, changeCollabRequstStatus } from '../services';
 import { ContractParameters } from '../models';
 import * as Q from 'q';
 
@@ -129,7 +129,7 @@ export function runContract(business: string, schemeType: string, schemeName: st
             if (verb == 'sign') {
                 const fx = new ContractPaper('fx', 'FX', ['fx', 'vault']);
                 const contractInstance = fx.contract.at(details.contractLocation);
-                const signingEvent = contractInstance.ContractSigning();
+                const signingEvent = contractInstance.AcceptAgreement();
                 signingEvent.watch((error, result) => {
                     if (error) {
                         console.log(error);
@@ -139,9 +139,9 @@ export function runContract(business: string, schemeType: string, schemeName: st
                     }
                 });
                 if (business === 'BASYXLab') {
-                    contractInstance.acceptAggreement(web3.eth.accounts[0], details.vaultLocation);
+                    contractInstance.acceptAgreement(web3.eth.accounts[0], details.vaultLocation);
                 } else {
-                    contractInstance.acceptAggreement(web3.eth.accounts[1], details.vaultLocation);
+                    contractInstance.acceptAgreement(web3.eth.accounts[1], details.vaultLocation);
                 }
             } else if (verb == 'transfer') {
                 const fx = new ContractPaper('fx', 'FX', ['fx', 'vault']);
@@ -199,13 +199,83 @@ export function parseCollaborationRequest(
     });
 }
 
+export function parseCollaborationAcceptance(business: string, schemeName: string, acceptanceInfo): Q.Promise<{}> {
+
+    console.log(schemeName);
+    return Q.Promise((resolve, reject, notify) => {
+        if (acceptanceInfo.contractType === 'fx') {
+            findContractAddress(business, schemeName, true)
+                .then((collabContractAddress) => {
+                    console.log(collabContractAddress);
+                    const fx = new ContractPaper('fx', 'FX', ['fx', 'vault']);
+                    console.log('Made new contract paper');
+                    const contractInstance = fx.contract.at(collabContractAddress);
+                    console.log('Made the contract instace');
+                    const signingEvent = contractInstance.AcceptAgreement();
+                    console.log('Found the event');
+
+                    signingEvent.watch((error, result) => {
+                        if (error) {
+                            console.log(error);
+                        } else {
+                            console.log(result.args);
+                            changeCollabRequstStatus(business, schemeName);
+                            subscribeToFxEvents(collabContractAddress);
+                            signingEvent.stopWatching();
+                        }
+                    });
+
+                    console.log('signed up to the event');
+
+                    if (business === 'BASYXLab') {
+                        // web3.eth.defaultAccount = web3.eth.accounts[0];
+                        console.log('BASXYLab accepted');
+                        resolve(contractInstance.acceptAgreement(web3.eth.accounts[0], acceptanceInfo.vaultAddress));
+                        // resolve(web3.eth.defaultAccount = web3.eth.coinbase);
+                    } else if (business === 'NeikidFyre') {
+                        // web3.eth.defaultAccount = web3.eth.accounts[1];
+                        console.log('NeikidFyre accepted');
+                        resolve(contractInstance.acceptAgreement(web3.eth.accounts[1], acceptanceInfo.vaultAddress));
+                        // resolve(web3.eth.defaultAccount = web3.eth.coinbase);
+                    } else {
+                        // web3.eth.defaultAccount = web3.eth.accounts[2];
+                        console.log('Ataraxia accepted');
+                        resolve(contractInstance.acceptAgreement(web3.eth.accounts[2], acceptanceInfo.vaultAddress));
+                        // resolve(web3.eth.defaultAccount = web3.eth.coinbase);
+                    }
+                })
+                .fail((error) => {
+                    reject('Cant find contract address');
+                });
+        } else {
+            reject({ status: 'Non-existant contract type' })
+        }
+    });
+}
+
+function subscribeToFxEvents(contractAddress) {
+    const fx = new ContractPaper('fx', 'FX', ['fx', 'vault']);
+    const contractInstance = fx.contract.at(contractAddress);
+    const transferEvent = contractInstance.Transfer();
+    transferEvent.watch((error, result) => {
+        if (error) {
+            console.log(error);
+        } else {
+            console.log(result.args);
+            //TODO: add transaction to Firebase
+            transferEvent.stopWatching();
+        }
+    });
+    //TODO: contract voiding event
+}
+
 export function acceptCooperation(business: string, vaultAddress: string, schemeName: string): Q.Promise<{}> {
     return Q.Promise((resolve, reject, notify) => {
         const fx = new ContractPaper('fx', 'FX', ['fx', 'vault']);
         retrieveDeployedContract(business, schemeName)
             .then((snapshot) => {
                 const contractInstance = fx.contract.at(snapshot.contractAddress);
-                const agreementEvent = contractInstance.AcceptAggreement();
+                const agreementEvent = contractInstance.AcceptAgreement();
                 // const collectionEvent = eval('contractInstance.' + 'IncreaseBalance()');
                 agreementEvent.watch((error, result) => {
                     if (error) {
@@ -227,11 +297,11 @@ export function acceptCooperation(business: string, vaultAddress: string, scheme
                     }
                 })
                 if (business === 'BASYXLab') {
-                    contractInstance.acceptAggreement(web3.eth.accounts[0], vaultAddress);
+                    contractInstance.acceptAgreement(web3.eth.accounts[0], vaultAddress);
                 } else if (business === 'NeikidFyre') {
-                    contractInstance.acceptAggreement(web3.eth.accounts[1], vaultAddress);
+                    contractInstance.acceptAgreement(web3.eth.accounts[1], vaultAddress);
                 } else {
-                    contractInstance.acceptAggreement(web3.eth.accounts[2], vaultAddress);
+                    contractInstance.acceptAgreement(web3.eth.accounts[2], vaultAddress);
                 }
 
                 resolve({ status: 200 })
@@ -313,7 +383,7 @@ export class FxContract extends ContractPaper {
                             }
                             const fx = new ContractPaper('fx', 'FX', ['fx', 'vault']);
                             const contractInstance = fx.contract.at(contract.address);
-                            const signingEvent = eval('contractInstance.' + 'ContractSigning()');
+                            const signingEvent = eval('contractInstance.' + 'AcceptAgreement()');
                             signingEvent.watch((error, result) => {
                                 if (error) {
                                     console.log(error);
@@ -322,7 +392,7 @@ export class FxContract extends ContractPaper {
                                     signingEvent.stopWatching();
                                 }
                             });
-                            const voidingEvent = eval('contractInstance.' + 'ContractVoiding()');
+                            const voidingEvent = eval('contractInstance.' + 'VoidAgreement()');
                             voidingEvent.watch((error, result) => {
                                 if (error) {
                                     console.log(error);
