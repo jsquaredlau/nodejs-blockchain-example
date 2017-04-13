@@ -4,7 +4,7 @@
 // MODULE IMPORTS
 import { Router, Request, Response } from 'express';
 import { deployContract, runContract } from '../services';
-import { listDeployedContracts, updateDeployedContract, saveBusinessDetails, deactivateDeployedContract, parseCollaborationRequest, parseCollaborationAcceptance } from '../services';
+import { listDeployedContracts, updateDeployedContract, saveBusinessDetails, deactivateDeployedContract, parseCollaborationRequest, parseCollaborationAcceptance, parseCollaborationRejection } from '../services';
 import { ContractParameters, CollaborationRequestInfo } from '../models';
 
 // LIBRARY IMPORTS
@@ -78,23 +78,19 @@ router.post('/collaboration/:business/accept/:scheme', (req: Request, res: Respo
         .fail((error) => {
             res.status(500).send(error);
         });
-
-
 });
-// router.post('/:business/:schemeType/:schemeName/deploy', (req: Request, res: Response) => {
-//     const { business, schemeType, schemeName } = req.params;
-//     const contractParameters = req.body;
-//     contractParameters['owner'] = business;
-//     deployContract(business, schemeType, schemeName, contractParameters)
-//         .then((result) => {
-//             console.log(result);
-//             res.status(200).send('Contract Deployed!');
-//         })
-//         .fail((error) => {
-//             console.log(error);
-//             res.status(500).send('Contract deployment failed. Please try again');
-//         });
-// });
+
+router.post('/collaboration/:business/reject/:scheme', (req: Request, res: Response) => {
+    const { business, scheme } = req.params;
+    const postValues = req.body;
+    parseCollaborationRejection(business, scheme.replace('%20', ' '), postValues)
+        .then((result) => {
+            res.status(200).send('Collaboration Rejection Complete');
+        })
+        .fail((error) => {
+            res.status(500).send(error);
+        });
+});
 
 router.post('/:business/:schemeType/:schemeName/:verb', (req: Request, res: Response) => {
     const { business, schemeType, schemeName, verb } = req.params;

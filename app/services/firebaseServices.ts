@@ -61,12 +61,12 @@ export function recordCollaborationAgreement(business: string, schemeName: strin
 export function changeContractStatus(schemeName: string, owner: string, status: string): void {
     if (status === 'active') {
         database.ref('schemes/' + owner + '/' + schemeName).child('status').set(status);
-        database.ref('business/' + owner + '/activeSchemes').child(schemeName).set(true);
-        database.ref('business/' + owner + '/pendingSchemes').child(schemeName).remove();
+        database.ref('businesses/' + owner + '/activeSchemes').child(schemeName).set(true);
+        database.ref('businesses/' + owner + '/pendingSchemes').child(schemeName).remove();
     } else if (status === 'deactivated') {
         database.ref('schemes/' + owner + '/' + schemeName).child('status').set(status);
-        database.ref('business/' + owner + '/deactiveSchemes').child(schemeName).set(true);
-        database.ref('business/' + owner + '/activeSchemes').child(schemeName).remove();
+        database.ref('businesses/' + owner + '/deactiveSchemes').child(schemeName).set(true);
+        database.ref('businesses/' + owner + '/activeSchemes').child(schemeName).remove();
     }
 
 }
@@ -155,6 +155,7 @@ export function findContractAddress(business: string, schemeName: string, collab
         if (collabRequest) {
             firebase.database().ref('schemes/' + business + '/collaborationRequests/' + schemeName + '/contractAddress').once('value')
                 .then((snapshot) => {
+                    console.log('gets in here');
                     if (snapshot.val() !== null) {
                         resolve(snapshot.val());
                     } else {
@@ -166,6 +167,7 @@ export function findContractAddress(business: string, schemeName: string, collab
         } else {
             firebase.database().ref('schemes/' + business + '/' + schemeName + '/contractAddress').once('value')
                 .then((snapshot) => {
+                    console.log('no it gets inh here');
                     if (snapshot.val() !== null) {
                         resolve(snapshot.val());
                     } else {
@@ -178,10 +180,34 @@ export function findContractAddress(business: string, schemeName: string, collab
     });
 }
 
-export function changeCollabRequstStatus(business: string, schemeName: string): void {
-    firebase.database().ref('/businesses/' + business + '/' + schemeName).set(true);
-    firebase.database().ref('/businesses/' + business + '/collaborationRequests').child(schemeName).remove();
+export function changeCollabRequstStatus(business: string, schemeName: string, status: string): void {
+    if (status === 'activated') {
+        firebase.database().ref('/businesses/' + business + '/activeSchemes/' + schemeName).set(true);
+        firebase.database().ref('/businesses/' + business + '/collaborationRequests').child(schemeName).remove();
+        moveFbRecord(firebase.database().ref('/schemes/' + business + '/collaborationRequests/' + schemeName), firebase.database().ref('/schemes/' + business + '/' + schemeName));
+    } else if (status === 'deactivated') {
+        firebase.database().ref('/businesses/' + business + '/activeSchemes/' + schemeName).remove()
+        firebase.database().ref('/businesses/' + business + '/deactiveSchemes/' + schemeName).set(true);
+    }
+
 }
+
+function moveFbRecord(oldRef, newRef) {
+    oldRef.once('value')
+        .then((snapshot) => {
+            newRef.set(snapshot.val(), function(error) {
+                if (!error) { oldRef.remove(); }
+                else if (typeof (console) !== 'undefined' && console.error) { console.error(error); }
+            });
+        })
+    // oldRef.once('value', function(snap) {
+    //     newRef.set(snap.val(), function(error) {
+    //         if (!error) { oldRef.remove(); }
+    //         else if (typeof (console) !== 'undefined' && console.error) { console.error(error); }
+    //     });
+    // });
+}
+
 /* @ BUSINESSES */
 
 export function saveBusinessDetails(business: string, details: BusinessDetails): Q.Promise<{}> {

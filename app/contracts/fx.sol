@@ -17,15 +17,17 @@ contract FX {
     event Transfer(string status, address indexed initiator, address indexed fromAccount, address indexed toAccount, uint256 amountConverted, uint256 amountReceived);
     event AcceptAgreement(string status, address indexed acceptedBy);
     event VoidAgreement(string status, address indexed voidedBy);
+    event TestFunction(string status, string message);
 
     /* CONSTRUCTOR */
-    function FX(address _vaultLocation, uint256 _toPartnerX, uint256 _toOwnerX) {
-        owner = msg.sender;
+    function FX(address _contractOwner, address _vaultLocation, uint256 _toPartnerX, uint256 _toOwnerX) {
+        owner = _contractOwner;
         /*partnerBusiness = _partnerBusiness;*/
-        agreement[msg.sender] = true;
+        agreement[_contractOwner] = true;
         toPartnerX = _toPartnerX;
         toOwnerX = _toOwnerX;
         vOwnerBusiness = Vault(_vaultLocation);
+        /*ContractBuilt('SUCCESS');*/
     }
 
     function transfer (uint256 amountToConvert, address fromAccount, address toAccount) {
@@ -52,15 +54,18 @@ contract FX {
     function acceptAgreement(address businessAddress, address _partnerVaultLocation) {
         partnerBusiness = businessAddress;
         agreement[businessAddress] = true;
-        validatedAt = block.timestamp;
+        /*validatedAt = block.timestamp;*/
         vPartnerBusiness = Vault(_partnerVaultLocation);
-        AcceptAgreement('SUCCESS', msg.sender);
+        AcceptAgreement('SUCCESS', businessAddress);
     }
 
-    function voidAgreement() {
-        agreement[msg.sender] = false;
-        voidedAt = block.timestamp;
-        VoidAgreement('SUCCESS', msg.sender);
+    function voidAgreement(address businessAddress) {
+        if (agreementValid()){
+            agreement[businessAddress] = false;
+            VoidAgreement('SUCCESS', businessAddress);
+        } else {
+            throw;
+        }
     }
 
     function agreementValid() private returns (bool status){
@@ -75,6 +80,10 @@ contract FX {
         if (msg.sender == owner) {
             selfdestruct(owner);
         }
+    }
+
+    function testFunction() {
+        TestFunction('SUCCESS', 'MERELY CHECKING IF THIS WORKS');
     }
 
     function () {

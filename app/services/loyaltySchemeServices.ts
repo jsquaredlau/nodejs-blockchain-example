@@ -126,8 +126,29 @@ export function runContract(business: string, schemeType: string, schemeName: st
                     console.log(error);
                 });
         } else if (schemeType === 'fx') {
-            if (verb == 'sign') {
+            if (verb == 'test') {
                 const fx = new ContractPaper('fx', 'FX', ['fx', 'vault']);
+                console.log(details.contractLocation);
+                const contractInstance = fx.contract.at(details.contractLocation);
+                const signingEvent = contractInstance.TestFunction();
+                signingEvent.watch((error, result) => {
+                    if (error) {
+                        console.log(error);
+                    } else {
+                        console.log(result.args);
+                        signingEvent.stopWatching();
+                    }
+                });
+                if (business === 'BASYXLab') {
+                    contractInstance.testFunction();
+                    resolve({ status: 200 });
+                } else {
+                    contractInstance.testFunction();
+                    resolve({ status: 200 });
+                }
+            } else if (verb == 'sign') {
+                const fx = new ContractPaper('fx', 'FX', ['fx', 'vault']);
+                console.log(details.contractLocation);
                 const contractInstance = fx.contract.at(details.contractLocation);
                 const signingEvent = contractInstance.AcceptAgreement();
                 signingEvent.watch((error, result) => {
@@ -140,8 +161,10 @@ export function runContract(business: string, schemeType: string, schemeName: st
                 });
                 if (business === 'BASYXLab') {
                     contractInstance.acceptAgreement(web3.eth.accounts[0], details.vaultLocation);
+                    resolve({ status: 200 });
                 } else {
                     contractInstance.acceptAgreement(web3.eth.accounts[1], details.vaultLocation);
+                    resolve({ status: 200 });
                 }
             } else if (verb == 'transfer') {
                 const fx = new ContractPaper('fx', 'FX', ['fx', 'vault']);
@@ -157,8 +180,10 @@ export function runContract(business: string, schemeType: string, schemeName: st
                 });
                 if (business === 'BASYXLab') {
                     contractInstance.transfer(100, '0x036441ca89ec63122e96abbf11e8b50a6a1d0f3a', '0x036441ca89ec63122e96abbf11e8b50a6a1d0f3a');
+                    resolve({ status: 200 });
                 } else {
                     contractInstance.transfer(100, '0x036441ca89ec63122e96abbf11e8b50a6a1d0f3a', '0x036441ca89ec63122e96abbf11e8b50a6a1d0f3a');
+                    resolve({ status: 200 });
                 }
             } else if (verb == 'void') {
 
@@ -200,7 +225,6 @@ export function parseCollaborationRequest(
 }
 
 export function parseCollaborationAcceptance(business: string, schemeName: string, acceptanceInfo): Q.Promise<{}> {
-
     console.log(schemeName);
     return Q.Promise((resolve, reject, notify) => {
         if (acceptanceInfo.contractType === 'fx') {
@@ -219,7 +243,7 @@ export function parseCollaborationAcceptance(business: string, schemeName: strin
                             console.log(error);
                         } else {
                             console.log(result.args);
-                            changeCollabRequstStatus(business, schemeName);
+                            changeCollabRequstStatus(business, schemeName, 'activated');
                             subscribeToFxEvents(collabContractAddress);
                             signingEvent.stopWatching();
                         }
@@ -228,20 +252,54 @@ export function parseCollaborationAcceptance(business: string, schemeName: strin
                     console.log('signed up to the event');
 
                     if (business === 'BASYXLab') {
-                        // web3.eth.defaultAccount = web3.eth.accounts[0];
                         console.log('BASXYLab accepted');
                         resolve(contractInstance.acceptAgreement(web3.eth.accounts[0], acceptanceInfo.vaultAddress));
-                        // resolve(web3.eth.defaultAccount = web3.eth.coinbase);
                     } else if (business === 'NeikidFyre') {
-                        // web3.eth.defaultAccount = web3.eth.accounts[1];
                         console.log('NeikidFyre accepted');
                         resolve(contractInstance.acceptAgreement(web3.eth.accounts[1], acceptanceInfo.vaultAddress));
-                        // resolve(web3.eth.defaultAccount = web3.eth.coinbase);
                     } else {
-                        // web3.eth.defaultAccount = web3.eth.accounts[2];
                         console.log('Ataraxia accepted');
                         resolve(contractInstance.acceptAgreement(web3.eth.accounts[2], acceptanceInfo.vaultAddress));
-                        // resolve(web3.eth.defaultAccount = web3.eth.coinbase);
+                    }
+                })
+                .fail((error) => {
+                    reject('Cant find contract address');
+                });
+        } else {
+            reject({ status: 'Non-existant contract type' })
+        }
+    });
+}
+
+export function parseCollaborationRejection(business: string, schemeName: string, rejectionInfo): Q.Promise<{}> {
+    return Q.Promise((resolve, reject, notify) => {
+        if (rejectionInfo.contractType === 'fx') {
+            findContractAddress(business, schemeName)
+                .then((collabContractAddress) => {
+                    console.log(collabContractAddress);
+                    const fx = new ContractPaper('fx', 'FX', ['fx', 'vault']);
+                    const contractInstance = fx.contract.at(collabContractAddress);
+                    const voidingEvent = contractInstance.VoidAgreement();
+
+                    voidingEvent.watch((error, result) => {
+                        if (error) {
+                            console.log(error);
+                        } else {
+                            console.log(result.args);
+                            changeCollabRequstStatus(business, schemeName, 'deactivated');
+                            voidingEvent.stopWatching();
+                        }
+                    });
+
+                    if (business === 'BASYXLab') {
+                        console.log('BASXYLab rejected');
+                        resolve(contractInstance.voidAgreement(web3.eth.accounts[0]));
+                    } else if (business === 'rejected') {
+                        console.log('NeikidFyre accepted');
+                        resolve(contractInstance.voidAgreement(web3.eth.accounts[1]));
+                    } else {
+                        console.log('Ataraxia rejected');
+                        resolve(contractInstance.voidAgreement(web3.eth.accounts[2]));
                     }
                 })
                 .fail((error) => {
@@ -269,48 +327,48 @@ function subscribeToFxEvents(contractAddress) {
     //TODO: contract voiding event
 }
 
-export function acceptCooperation(business: string, vaultAddress: string, schemeName: string): Q.Promise<{}> {
-    return Q.Promise((resolve, reject, notify) => {
-        const fx = new ContractPaper('fx', 'FX', ['fx', 'vault']);
-        retrieveDeployedContract(business, schemeName)
-            .then((snapshot) => {
-                const contractInstance = fx.contract.at(snapshot.contractAddress);
-                const agreementEvent = contractInstance.AcceptAgreement();
-                // const collectionEvent = eval('contractInstance.' + 'IncreaseBalance()');
-                agreementEvent.watch((error, result) => {
-                    if (error) {
-                        console.log(error);
-                    } else {
-                        console.log(result.args);
-                        agreementEvent.stopWatching();
-                    }
-                });
-
-                const transferEvent = contractInstance.Transfer();
-                transferEvent.watch((error, result) => {
-                    if (error) {
-                        console.log(error);
-                    } else {
-                        console.log(result.args);
-                        //TODO: add transfer details to database
-                        //TODO: stopwatching on deactivate
-                    }
-                })
-                if (business === 'BASYXLab') {
-                    contractInstance.acceptAgreement(web3.eth.accounts[0], vaultAddress);
-                } else if (business === 'NeikidFyre') {
-                    contractInstance.acceptAgreement(web3.eth.accounts[1], vaultAddress);
-                } else {
-                    contractInstance.acceptAgreement(web3.eth.accounts[2], vaultAddress);
-                }
-
-                resolve({ status: 200 })
-            })
-            .fail((error) => {
-                reject(error);
-            });
-    });
-}
+// export function acceptCooperation(business: string, vaultAddress: string, schemeName: string): Q.Promise<{}> {
+//     return Q.Promise((resolve, reject, notify) => {
+//         const fx = new ContractPaper('fx', 'FX', ['fx', 'vault']);
+//         retrieveDeployedContract(business, schemeName)
+//             .then((snapshot) => {
+//                 const contractInstance = fx.contract.at(snapshot.contractAddress);
+//                 const agreementEvent = contractInstance.AcceptAgreement();
+//                 // const collectionEvent = eval('contractInstance.' + 'IncreaseBalance()');
+//                 agreementEvent.watch((error, result) => {
+//                     if (error) {
+//                         console.log(error);
+//                     } else {
+//                         console.log(result.args);
+//                         agreementEvent.stopWatching();
+//                     }
+//                 });
+//
+//                 const transferEvent = contractInstance.Transfer();
+//                 transferEvent.watch((error, result) => {
+//                     if (error) {
+//                         console.log(error);
+//                     } else {
+//                         console.log(result.args);
+//                         //TODO: add transfer details to database
+//                         //TODO: stopwatching on deactivate
+//                     }
+//                 })
+//                 if (business === 'BASYXLab') {
+//                     contractInstance.acceptAgreement(web3.eth.accounts[0], vaultAddress);
+//                 } else if (business === 'NeikidFyre') {
+//                     contractInstance.acceptAgreement(web3.eth.accounts[1], vaultAddress);
+//                 } else {
+//                     contractInstance.acceptAgreement(web3.eth.accounts[2], vaultAddress);
+//                 }
+//
+//                 resolve({ status: 200 })
+//             })
+//             .fail((error) => {
+//                 reject(error);
+//             });
+//     });
+// }
 
 export class ContractPaper {
     public contractFile: string;
@@ -354,8 +412,18 @@ export class FxContract extends ContractPaper {
     }
 
     deployContract(from: number, schemeName: string, details): Q.Promise<{}> {
+        let contractOwnerAddress;
+        if (details.requester === 'BASYXLab') {
+            contractOwnerAddress = web3.eth.accounts[0];
+        } else if (details.requester === 'NeikidFyre') {
+            contractOwnerAddress = web3.eth.accounts[1];
+        } else {
+            contractOwnerAddress = web3.eth.accounts[2];
+        }
+
         return Q.Promise((resolve, reject, notify) => {
             resolve(this.contract.new(
+                contractOwnerAddress,
                 this.parameters[0],// vaultLocation
                 this.parameters[1],// partnerBusiness
                 this.parameters[2],// toPartnerFx
@@ -388,6 +456,8 @@ export class FxContract extends ContractPaper {
                                 if (error) {
                                     console.log(error);
                                 } else {
+                                    console.log(result);
+                                    // changeCollabRequstStatus(details.requestedPartner, schemeName, 'activated');
                                     changeContractStatus(schemeName, details.requester, 'active');
                                     signingEvent.stopWatching();
                                 }
@@ -397,6 +467,7 @@ export class FxContract extends ContractPaper {
                                 if (error) {
                                     console.log(error);
                                 } else {
+                                    console.log(result);
                                     changeContractStatus(schemeName, details.requester, 'deactivated');
                                     voidingEvent.stopWatching();
                                 }
