@@ -146,7 +146,8 @@ export function runContract(business: string, schemeType: string, schemeName: st
                     contractInstance.testFunction();
                     resolve({ status: 200 });
                 }
-            } else if (verb == 'sign') {
+            }
+            else if (verb == 'sign') {
                 const fx = new ContractPaper('fx', 'FX', ['fx', 'vault']);
                 console.log(details.contractLocation);
                 const contractInstance = fx.contract.at(details.contractLocation);
@@ -166,25 +167,45 @@ export function runContract(business: string, schemeType: string, schemeName: st
                     contractInstance.acceptAgreement(web3.eth.accounts[1], details.vaultLocation);
                     resolve({ status: 200 });
                 }
-            } else if (verb == 'transfer') {
-                const fx = new ContractPaper('fx', 'FX', ['fx', 'vault']);
-                const contractInstance = fx.contract.at(details.contractLocation);
-                const transferEvent = contractInstance.Transfer();
-                transferEvent.watch((error, result) => {
-                    if (error) {
-                        console.log(error);
-                    } else {
-                        console.log(result.args);
-                        transferEvent.stopWatching();
-                    }
-                });
-                if (business === 'BASYXLab') {
-                    contractInstance.transfer(100, '0x036441ca89ec63122e96abbf11e8b50a6a1d0f3a', '0x036441ca89ec63122e96abbf11e8b50a6a1d0f3a');
-                    resolve({ status: 200 });
-                } else {
-                    contractInstance.transfer(100, '0x036441ca89ec63122e96abbf11e8b50a6a1d0f3a', '0x036441ca89ec63122e96abbf11e8b50a6a1d0f3a');
-                    resolve({ status: 200 });
-                }
+            }
+            else if (verb == 'transfer') {
+                findContractAddress(business, schemeName)
+                    .then((contractAddress) => {
+                        const fx = new ContractPaper('fx', 'FX', ['fx', 'vault']);
+                        const contractInstance = fx.contract.at(contractAddress);
+                        const transferEvent = contractInstance.Transfer();
+
+                        transferEvent.watch((error, result) => {
+                            if (error) {
+                                console.log(error);
+                            } else {
+                                console.log(result.args);
+                                resolve(result.args);
+                                //TODO: respond with amount changed?
+                                transferEvent.stopWatching();
+                            }
+                        });
+
+                        contractInstance.transfer(details.fromAccount, details.toAccount, details.fromBusiness, details.toBusiness, details.amount);
+                    })
+                // const fx = new ContractPaper('fx', 'FX', ['fx', 'vault']);
+                // const contractInstance = fx.contract.at(details.contractLocation);
+                // const transferEvent = contractInstance.Transfer();
+                // transferEvent.watch((error, result) => {
+                //     if (error) {
+                //         console.log(error);
+                //     } else {
+                //         console.log(result.args);
+                //         transferEvent.stopWatching();
+                //     }
+                // });
+                // if (business === 'BASYXLab') {
+                //     contractInstance.transfer(100, '0x036441ca89ec63122e96abbf11e8b50a6a1d0f3a', '0x036441ca89ec63122e96abbf11e8b50a6a1d0f3a');
+                //     resolve({ status: 200 });
+                // } else {
+                //     contractInstance.transfer(100, '0x036441ca89ec63122e96abbf11e8b50a6a1d0f3a', '0x036441ca89ec63122e96abbf11e8b50a6a1d0f3a');
+                //     resolve({ status: 200 });
+                // }
             } else if (verb == 'void') {
 
             } else {

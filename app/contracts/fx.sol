@@ -14,7 +14,7 @@ contract FX {
     Vault vOwnerBusiness;
     Vault vPartnerBusiness;
 
-    event Transfer(string status, address indexed initiator, address indexed fromAccount, address indexed toAccount, uint256 amountConverted, uint256 amountReceived);
+    event Transfer(string status, address indexed fromBusiness, address indexed fromAccount, address indexed toAccount, uint256 amountConverted, uint256 amountReceived);
     event AcceptAgreement(string status, address indexed acceptedBy);
     event VoidAgreement(string status, address indexed voidedBy);
     event TestFunction(string status, string message);
@@ -30,7 +30,7 @@ contract FX {
         /*ContractBuilt('SUCCESS');*/
     }
 
-    function transfer (uint256 amountToConvert, address fromAccount, address toAccount) {
+    /*function transfer (uint256 amountToConvert, address fromAccount, address toAccount) {
         if (agreementValid()) {
             uint256 amountReceivable;
             if (msg.sender == owner) {
@@ -48,6 +48,27 @@ contract FX {
             }
         } else {
             throw;
+        }
+    }*/
+
+    function transfer(address fromAccount, address toAccount, address fromBusiness, address toBusiness, uint256 amountToConvert) {
+        if (agreementValid()) {
+            uint256 amountReceivable;
+            if (fromBusiness == owner) {
+                amountReceivable = toPartnerX * ( amountToConvert / toOwnerX );
+                vOwnerBusiness.decreaseBalance(fromAccount, amountToConvert);
+                vPartnerBusiness.increaseBalance(toAccount, amountReceivable);
+                Transfer('SUCCESS', fromBusiness, fromAccount, toAccount, amountToConvert, amountReceivable);
+            } else if (toBusiness == partnerBusiness) {
+                amountReceivable = toOwnerX * ( amountToConvert / toPartnerX );
+                vOwnerBusiness.increaseBalance(fromAccount, amountReceivable);
+                vPartnerBusiness.decreaseBalance(toAccount, amountToConvert);
+                Transfer('SUCCESS', fromBusiness, fromAccount, toAccount, amountToConvert, amountReceivable);
+            } else {
+                Transfer('FAILURE', fromBusiness, fromAccount, toAccount, amountToConvert, 0);
+            }
+        } else {
+            Transfer('FAILURE', fromBusiness, fromAccount, toAccount, amountToConvert, 0);
         }
     }
 
