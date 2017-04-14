@@ -23,6 +23,8 @@ export function deployContract(business: string, contractType: string, schemeNam
             merchantDeployment(business, schemeName, details).then((result) => { resolve(result) }).fail((result) => { reject(result) });
         } else if (contractType === 'fx') {
             fxDeployment(business, schemeName, details).then((result) => { resolve(result) }).fail((result) => { reject(result) });
+        } else if (contractType === 'rewardMile') {
+            rewardMileDeployment(business, schemeName, details).then((result) => { resolve(result) }).fail((error) => { reject(error) });
         } else if (contractType === 'greeter') {
             const contract = new HelloWorldContract('greeter', ['COME AT ME BRO!!'])
             contract.deployContract(web3.eth.accounts[0], 'helloworld', details)
@@ -97,6 +99,20 @@ function merchantDeployment(business: string, schemeName: string, details: Contr
                 });
         }
 
+    });
+}
+
+function rewardMileDeployment(business: string, schemeName: string, details): Q.Promise<{}> {
+    console.log(details);
+    return Q.Promise((resolve, reject, notify) => {
+        const contract = new RewardMileContract('RewardMile', [details.partners.split(','), details.ownerRewardAllocation, details.ownerVault]);
+        contract.deployContract(web3.eth.accounts[0], schemeName, details)
+            .then((result) => {
+                resolve({ status: 200 });
+            })
+            .fail((error) => {
+                reject({ status: 500 });
+            })
     });
 }
 
@@ -348,49 +364,6 @@ function subscribeToFxEvents(contractAddress) {
     //TODO: contract voiding event
 }
 
-// export function acceptCooperation(business: string, vaultAddress: string, schemeName: string): Q.Promise<{}> {
-//     return Q.Promise((resolve, reject, notify) => {
-//         const fx = new ContractPaper('fx', 'FX', ['fx', 'vault']);
-//         retrieveDeployedContract(business, schemeName)
-//             .then((snapshot) => {
-//                 const contractInstance = fx.contract.at(snapshot.contractAddress);
-//                 const agreementEvent = contractInstance.AcceptAgreement();
-//                 // const collectionEvent = eval('contractInstance.' + 'IncreaseBalance()');
-//                 agreementEvent.watch((error, result) => {
-//                     if (error) {
-//                         console.log(error);
-//                     } else {
-//                         console.log(result.args);
-//                         agreementEvent.stopWatching();
-//                     }
-//                 });
-//
-//                 const transferEvent = contractInstance.Transfer();
-//                 transferEvent.watch((error, result) => {
-//                     if (error) {
-//                         console.log(error);
-//                     } else {
-//                         console.log(result.args);
-//                         //TODO: add transfer details to database
-//                         //TODO: stopwatching on deactivate
-//                     }
-//                 })
-//                 if (business === 'BASYXLab') {
-//                     contractInstance.acceptAgreement(web3.eth.accounts[0], vaultAddress);
-//                 } else if (business === 'NeikidFyre') {
-//                     contractInstance.acceptAgreement(web3.eth.accounts[1], vaultAddress);
-//                 } else {
-//                     contractInstance.acceptAgreement(web3.eth.accounts[2], vaultAddress);
-//                 }
-//
-//                 resolve({ status: 200 })
-//             })
-//             .fail((error) => {
-//                 reject(error);
-//             });
-//     });
-// }
-
 export class ContractPaper {
     public contractFile: string;
     public contractName: string;
@@ -593,6 +566,68 @@ export class MerchantContract extends ContractPaper {
                         } else {
                             console.log("Contract mined! Address: " + contract.address);
                             saveDeployedContract('Merchant', schemeName, contract.address, details);
+                        }
+                    }
+                }
+            ));
+        });
+    }
+}
+
+export class RewardMileContract extends ContractPaper {
+    public parameters: Array<any>;
+
+    constructor(contractName: string, parameters: Array<any>) {
+        super('rewardMile', contractName, ['rewardMile', 'vault']);
+        this.parameters = parameters;
+        console.log(parameters);
+    }
+
+    deployContract(from: number, schemeName: string, details): Q.Promise<{}> {
+        let contractOwnerAddress;
+        if (details.owner === 'BASYXLab') {
+            contractOwnerAddress = web3.eth.accounts[0];
+        } else if (details.owner === 'NeikidFyre') {
+            contractOwnerAddress = web3.eth.accounts[1];
+        } else {
+            contractOwnerAddress = web3.eth.accounts[2];
+        }
+
+        //TODO: find addresses of partners
+
+        // ### WARNING ###
+        // THIS NEEDS TO CHANGE!!!
+        details.partners = [web3.eth.accounts[1], web3.eth.accounts[2]];
+        console.log(contractOwnerAddress);
+        console.log(details.partners);
+        return Q.Promise((resolve, reject, notify) => {
+            resolve(this.contract.new(
+                contractOwnerAddress,
+                details.partners,
+                details.ownerRewardAllocation,
+                details.ownerVault,
+                { from: from, data: this.bytecode, gas: 1000000 },
+                function(e, contract) {
+                    if (!e) {
+                        if (!contract.address) {
+                            console.log("Contract transaction send: TransactionHash: " + contract.transactionHash + " waiting to be mined...");
+                        } else {
+                            console.log("Contract mined! Address: " + contract.address);
+                            saveDeployedContract('rewardMile', schemeName, contract.address, details);
+
+                            const rewardMile = new ContractPaper('rewardMile', 'RewardMile', ['rewardMile', 'vault']);
+                            const contractInstance = rewardMile.contract.at(contract.address);
+                            const testEvent = eval('contractInstance.' + 'TestFunction()');
+                            testEvent.watch((error, result) => {
+                                if (error) {
+                                    console.log(error);
+                                } else {
+                                    console.log(result);
+                                    testEvent.stopWatching();
+                                }
+                            });
+
+                            contractInstance.testFunction();
                         }
                     }
                 }

@@ -20,7 +20,22 @@ export function saveDeployedContract(contractType: string, schemeName: string, c
         saveVaultContract(schemeName, contractAddress, details);
     } else if (contractType === 'fx') {
         saveFxContract(schemeName, contractAddress, details);
+    } else if (contractType === 'rewardMile') {
+        saveRewardMileContract(schemeName, contractAddress, details);
     }
+}
+
+function saveRewardMileContract(schemeName: string, contractAddress: number, details): void {
+    database.ref('schemes/' + details.owner + '/' + schemeName).set({
+        contractType: details.contractType,
+        partners: details.partners,
+        ownerVault: details.ownerVault,
+        description: details.description,
+        instructions: details.instructions,
+        requiredInputs: details.requiredInputs,
+        status: 'pending'
+    });
+    database.ref('businesses/' + details.owner + '/' + 'pendingSchemes').child(schemeName).set(true);
 }
 
 function saveVaultContract(schemeName: string, contractAddress: number, details): void {

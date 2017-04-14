@@ -115,10 +115,6 @@ router.get('/:business/scheme/list', (req: Request, res: Response) => {
         });
 });
 
-// router.get('/:business/scheme/details', (req: Request, res: Response) => {
-//     res.send();
-// });
-
 router.post('/:business/:schemeName/update', (req: Request, res: Response) => {
     const { business, schemeName } = req.params;
     if (req.body !== null || req.body !== undefined) {
