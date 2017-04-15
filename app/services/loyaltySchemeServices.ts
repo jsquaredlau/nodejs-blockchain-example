@@ -104,6 +104,7 @@ function merchantDeployment(business: string, schemeName: string, details: Contr
 
 function rewardMileDeployment(business: string, schemeName: string, details): Q.Promise<{}> {
     console.log(details);
+    details['owner'] = business;
     return Q.Promise((resolve, reject, notify) => {
         const contract = new RewardMileContract('RewardMile', [details.partners.split(','), details.ownerRewardAllocation, details.ownerVault]);
         contract.deployContract(web3.eth.accounts[0], schemeName, details)
@@ -267,13 +268,9 @@ export function parseCollaborationAcceptance(business: string, schemeName: strin
         if (acceptanceInfo.contractType === 'fx') {
             findContractAddress(business, schemeName, true)
                 .then((collabContractAddress) => {
-                    console.log(collabContractAddress);
                     const fx = new ContractPaper('fx', 'FX', ['fx', 'vault']);
-                    console.log('Made new contract paper');
                     const contractInstance = fx.contract.at(collabContractAddress);
-                    console.log('Made the contract instace');
                     const signingEvent = contractInstance.AcceptAgreement();
-                    console.log('Found the event');
 
                     signingEvent.watch((error, result) => {
                         if (error) {
@@ -285,8 +282,6 @@ export function parseCollaborationAcceptance(business: string, schemeName: strin
                             signingEvent.stopWatching();
                         }
                     });
-
-                    console.log('signed up to the event');
 
                     if (business === 'BASYXLab') {
                         console.log('BASXYLab accepted');
@@ -302,8 +297,41 @@ export function parseCollaborationAcceptance(business: string, schemeName: strin
                 .fail((error) => {
                     reject('Cant find contract address');
                 });
+        } else if (acceptanceInfo.contractType === 'rewardMile') {
+            findContractAddress(business, schemeName, true)
+            .then((collabContractAddress) => {
+                const rewardMile = new ContractPaper('rewardMile', 'RewardMile', ['rewardMile', 'vault']);
+                const contractInstance = rewardMile.contract.at(collabContractAddress);
+                const signingEvent = contractInstance.AgreementValid();
+
+                signingEvent.watch((error, result) => {
+                    if (error) {
+                        console.log(error);
+                    } else {
+                        console.log(result.args);
+                        changeCollabRequstStatus(business, schemeName, 'activated');
+                        subscribeToRewardMileEvents(business, schemeName, collabContractAddress);
+                        signingEvent.stopWatching();
+                    }
+                });
+
+                if (business === 'BASYXLab') {
+                    console.log('BASXYLab accepted');
+                    resolve(contractInstance.acceptAgreement(web3.eth.accounts[0], acceptanceInfo.vaultAddress, acceptanceInfo.rewardAllocation));
+                } else if (business === 'NeikidFyre') {
+                    console.log('NeikidFyre accepted');
+                    resolve(contractInstance.acceptAgreement(web3.eth.accounts[1], acceptanceInfo.vaultAddress, acceptanceInfo.rewardAllocation));
+                } else {
+                    console.log('Ataraxia accepted');
+                    resolve(contractInstance.acceptAgreement(web3.eth.accounts[2], acceptanceInfo.vaultAddress, acceptanceInfo.rewardAllocation));
+                }
+
+            })
+            .fail((error) => {
+                reject('Cant find contract address');
+            });
         } else {
-            reject({ status: 'Non-existant contract type' })
+            reject({ status: 'Non-existant contract type' });
         }
     });
 }
@@ -342,8 +370,62 @@ export function parseCollaborationRejection(business: string, schemeName: string
                 .fail((error) => {
                     reject('Cant find contract address');
                 });
+        } else if (rejectionInfo.contractType === 'rewardMile') {
+            findContractAddress(business, schemeName)
+                .then((collabContractAddress) => {
+                    const fx = new ContractPaper('fx', 'FX', ['fx', 'vault']);
+                    const contractInstance = fx.contract.at(collabContractAddress);
+
+                    if (business === 'BASYXLab') {
+                        console.log('BASXYLab rejected');
+                        resolve(contractInstance.withdrawAgreement(web3.eth.accounts[0]));
+                    } else if (business === 'rejected') {
+                        console.log('NeikidFyre accepted');
+                        resolve(contractInstance.withdrawAgreement(web3.eth.accounts[1]));
+                    } else {
+                        console.log('Ataraxia rejected');
+                        resolve(contractInstance.withdrawAgreement(web3.eth.accounts[2]));
+                    }
+                })
+                .fail((error) => {
+                    reject('Cant find contract address');
+                });
         } else {
             reject({ status: 'Non-existant contract type' })
+        }
+    });
+}
+
+function subscribeToRewardMileEvents(business: string, schemeName: string, contractAddress): void {
+    const rewardMile = new ContractPaper('rewardMile', 'RewardMile', ['rewardMile', 'vault']);
+    const contractInstance = rewardMile.contract.at(contractAddress);
+
+    const voidingEvent = contractInstance.AgreementVoid();
+    voidingEvent.watch((error, result) => {
+        if (error) {
+            console.log(error);
+        } else {
+            console.log(result.args);
+            changeContractStatus(schemeName, business, 'deactivated');
+            voidingEvent.stopWatching();
+        }
+    });
+
+    const txReceivedEvent = contractInstance.TxReceived()
+    txReceivedEvent.watch((error, result) => {
+        if (error) {
+            console.log(error);
+        } else {
+            console.log(result.args);
+        }
+    });
+
+    const rewardDistributedEvent = contractInstance.RewardDistributed();
+    rewardDistributedEvent.watch((error, result) => {
+        if (error) {
+            console.log(error);
+        } else {
+            console.log(result.args);
         }
     });
 }
@@ -598,6 +680,7 @@ export class RewardMileContract extends ContractPaper {
         // ### WARNING ###
         // THIS NEEDS TO CHANGE!!!
         details.partners = [web3.eth.accounts[1], web3.eth.accounts[2]];
+
         console.log(contractOwnerAddress);
         console.log(details.partners);
         return Q.Promise((resolve, reject, notify) => {
@@ -627,7 +710,43 @@ export class RewardMileContract extends ContractPaper {
                                 }
                             });
 
+                            const validEvent = contractInstance.AgreementValid();
+                            validEvent.watch((error, result) => {
+                                if (error) {
+                                    console.log(error);
+                                } else {
+                                    console.log(result);
+                                    changeContractStatus(schemeName, details.owner, 'active')
+                                    subscribeToRewardMileEvents(details.owner, schemeName, contract.address);
+                                    validEvent.stopWatching();
+                                }
+                            });
+
                             contractInstance.testFunction();
+
+                            const collaborationRequestObject = {
+                                provider: 'LaaS1',
+                                owner: details.owner,
+                                schemeName: schemeName,
+                                requiredInputs: details.requiredInputs,
+                                description: details.description,
+                                instructions: details.instructions,
+                                conractType: 'rewardMile',
+                                partners: details.partners
+                            }
+
+                            request({
+                                url: 'http://localhost:3000/api/v1/business/collaboration/request',
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Accept': 'application/json'
+                                },
+                                json: true,
+                                body: collaborationRequestObject
+                            }, (err, res, body) => {
+                                console.log(body);
+                            });
                         }
                     }
                 }
