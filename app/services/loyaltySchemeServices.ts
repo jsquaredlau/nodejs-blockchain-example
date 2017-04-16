@@ -106,7 +106,7 @@ function rewardMileDeployment(business: string, schemeName: string, details): Q.
     console.log(details);
     details['owner'] = business;
     return Q.Promise((resolve, reject, notify) => {
-        const contract = new RewardMileContract('RewardMile', [details.partners.split(','), details.ownerRewardAllocation, details.ownerVault]);
+        const contract = new RewardMileContract('RewardMile', [details.partners, details.ownerRewardAllocation, details.vaultAddress]);
         contract.deployContract(web3.eth.accounts[0], schemeName, details)
             .then((result) => {
                 resolve({ status: 200 });
@@ -232,38 +232,15 @@ export function runContract(business: string, schemeType: string, schemeName: st
     });
 }
 
-export function parseCollaborationRequest(
-    provider: string,
-    requester: string,
-    requestedPartner: string,
-    schemeName: string,
-    contractType: string,
-    contractAddress: string,
-    description: string,
-    instructions: string,
-    requiredInputs: any,
-    toPartnerFx: number,
-    toOwnerFx: number,
-): Q.Promise<{}> {
+export function parseCollaborationRequest(business: string, collabInfo): Q.Promise<{}> {
     return Q.Promise((resolve, reject, notify) => {
-        resolve(queueCollaborationRequest(
-            provider,
-            requester,
-            requestedPartner,
-            schemeName,
-            contractType,
-            contractAddress,
-            description,
-            instructions,
-            requiredInputs,
-            toPartnerFx,
-            toOwnerFx
-        ));
+        resolve(queueCollaborationRequest(business, collabInfo));
     });
 }
 
 export function parseCollaborationAcceptance(business: string, schemeName: string, acceptanceInfo): Q.Promise<{}> {
     console.log(schemeName);
+    console.log(acceptanceInfo);
     return Q.Promise((resolve, reject, notify) => {
         if (acceptanceInfo.contractType === 'fx') {
             findContractAddress(business, schemeName, true)
@@ -285,13 +262,13 @@ export function parseCollaborationAcceptance(business: string, schemeName: strin
 
                     if (business === 'BASYXLab') {
                         console.log('BASXYLab accepted');
-                        resolve(contractInstance.acceptAgreement(web3.eth.accounts[0], acceptanceInfo.vaultAddress));
+                        resolve(contractInstance.acceptAgreement(web3.eth.accounts[0], acceptanceInfo.requiredInputs.vaultAddress));
                     } else if (business === 'NeikidFyre') {
                         console.log('NeikidFyre accepted');
-                        resolve(contractInstance.acceptAgreement(web3.eth.accounts[1], acceptanceInfo.vaultAddress));
+                        resolve(contractInstance.acceptAgreement(web3.eth.accounts[1], acceptanceInfo.requiredInputs.vaultAddress));
                     } else {
                         console.log('Ataraxia accepted');
-                        resolve(contractInstance.acceptAgreement(web3.eth.accounts[2], acceptanceInfo.vaultAddress));
+                        resolve(contractInstance.acceptAgreement(web3.eth.accounts[2], acceptanceInfo.requiredInputs.vaultAddress));
                     }
                 })
                 .fail((error) => {
@@ -317,15 +294,14 @@ export function parseCollaborationAcceptance(business: string, schemeName: strin
 
                 if (business === 'BASYXLab') {
                     console.log('BASXYLab accepted');
-                    resolve(contractInstance.acceptAgreement(web3.eth.accounts[0], acceptanceInfo.vaultAddress, acceptanceInfo.rewardAllocation));
+                    resolve(contractInstance.acceptAgreement(web3.eth.accounts[0], acceptanceInfo.vaultAddress, acceptanceInfo.requiredInputs.rewardAllocation));
                 } else if (business === 'NeikidFyre') {
                     console.log('NeikidFyre accepted');
-                    resolve(contractInstance.acceptAgreement(web3.eth.accounts[1], acceptanceInfo.vaultAddress, acceptanceInfo.rewardAllocation));
+                    resolve(contractInstance.acceptAgreement(web3.eth.accounts[1], acceptanceInfo.vaultAddress, acceptanceInfo.requiredInputs.rewardAllocation));
                 } else {
                     console.log('Ataraxia accepted');
-                    resolve(contractInstance.acceptAgreement(web3.eth.accounts[2], acceptanceInfo.vaultAddress, acceptanceInfo.rewardAllocation));
+                    resolve(contractInstance.acceptAgreement(web3.eth.accounts[2], acceptanceInfo.vaultAddress, acceptanceInfo.requiredInputs.rewardAllocation));
                 }
-
             })
             .fail((error) => {
                 reject('Cant find contract address');
@@ -489,9 +465,9 @@ export class FxContract extends ContractPaper {
 
     deployContract(from: number, schemeName: string, details): Q.Promise<{}> {
         let contractOwnerAddress;
-        if (details.requester === 'BASYXLab') {
+        if (details.owner === 'BASYXLab') {
             contractOwnerAddress = web3.eth.accounts[0];
-        } else if (details.requester === 'NeikidFyre') {
+        } else if (details.owner === 'NeikidFyre') {
             contractOwnerAddress = web3.eth.accounts[1];
         } else {
             contractOwnerAddress = web3.eth.accounts[2];
@@ -512,19 +488,35 @@ export class FxContract extends ContractPaper {
                         } else {
                             console.log("Contract mined! Address: " + contract.address);
                             saveDeployedContract('fx', schemeName, contract.address, details);
+                            // const collaborationRequestObject = {
+                            //     provider: 'LaaS1',
+                            //     owner: details.owner,
+                            //     requestedPartner: details.requestedPartner,
+                            //     schemeName: details.schemeName,
+                            //     contractType: 'fx',
+                            //     contractAddress: contract.address,
+                            //     description: details.description,
+                            //     instructions: details.instructions,
+                            //     requiredInputs: details.requiredInputs,
+                            //     toPartnerFx: details.toPartnerFx,
+                            //     toOwnerFx: details.toOwnerFx
+                            // }
+
                             const collaborationRequestObject = {
                                 provider: 'LaaS1',
-                                requester: details.requester,
-                                requestedPartner: details.requestedPartner,
-                                schemeName: details.schemeName,
-                                contractType: 'fx',
-                                contractAddress: contract.address,
+                                owner: details.owner,
+                                schemeName: schemeName,
+                                requiredInputs: details.requiredInputs,
                                 description: details.description,
                                 instructions: details.instructions,
-                                requiredInputs: details.requiredInputs,
+                                contractType: 'fx',
+                                contractAddress: contract.address,
+                                // vvv Contract Specific Details vvv
+                                requestedPartner: details.requestedPartner,
                                 toPartnerFx: details.toPartnerFx,
                                 toOwnerFx: details.toOwnerFx
                             }
+
                             const fx = new ContractPaper('fx', 'FX', ['fx', 'vault']);
                             const contractInstance = fx.contract.at(contract.address);
                             const signingEvent = eval('contractInstance.' + 'AcceptAgreement()');
@@ -534,7 +526,7 @@ export class FxContract extends ContractPaper {
                                 } else {
                                     console.log(result);
                                     // changeCollabRequstStatus(details.requestedPartner, schemeName, 'activated');
-                                    changeContractStatus(schemeName, details.requester, 'active');
+                                    changeContractStatus(schemeName, details.owner, 'active');
                                     signingEvent.stopWatching();
                                 }
                             });
@@ -544,12 +536,12 @@ export class FxContract extends ContractPaper {
                                     console.log(error);
                                 } else {
                                     console.log(result);
-                                    changeContractStatus(schemeName, details.requester, 'deactivated');
+                                    changeContractStatus(schemeName, details.owner, 'deactivated');
                                     voidingEvent.stopWatching();
                                 }
                             });
                             request({
-                                url: 'http://localhost:3000/api/v1/business/collaboration/request',
+                                url: 'http://localhost:3000/api/v1/business/collaboration/request/' + details.requestedPartner,
                                 method: 'POST',
                                 headers: {
                                     'Content-Type': 'application/json',
@@ -675,20 +667,43 @@ export class RewardMileContract extends ContractPaper {
             contractOwnerAddress = web3.eth.accounts[2];
         }
 
-        //TODO: find addresses of partners
+        const partnersInfo = {};
+        for (var i in details.partners) {
+            if (details.partners[i] === 'BASYXLab') {
+                partnersInfo[details.partners[i]] = web3.eth.accounts[0];
+            } else if (details.partners[i] === 'NeikidFyre') {
+                partnersInfo[details.partners[i]] = web3.eth.accounts[1];
+            } else {
+                partnersInfo[details.partners[i]] = web3.eth.accounts[2];
+            }
+        }
+        if (details.owner === 'BASYXLab') {
+            partnersInfo[details.owner] = web3.eth.accounts[0];
+        } else if (details.ower === 'NeikidFyre') {
+            partnersInfo[details.owner] = web3.eth.accounts[1];
+        } else {
+            partnersInfo[details.owner] = web3.eth.accounts[2];
+        }
 
-        // ### WARNING ###
-        // THIS NEEDS TO CHANGE!!!
-        details.partners = [web3.eth.accounts[1], web3.eth.accounts[2]];
+        const partnerAddresses = [];
+        for (var i in details.partners) {
+            if (details.partners[i] === 'BASYXLab') {
+                partnerAddresses.push(web3.eth.accounts[0]);
+            } else if (details.partners[i] === 'NeikidFyre') {
+                partnerAddresses.push(web3.eth.accounts[1]);
+            } else {
+                partnerAddresses.push(web3.eth.accounts[2]);
+            }
+        }
 
         console.log(contractOwnerAddress);
         console.log(details.partners);
         return Q.Promise((resolve, reject, notify) => {
             resolve(this.contract.new(
                 contractOwnerAddress,
-                details.partners,
+                partnerAddresses,
                 details.ownerRewardAllocation,
-                details.ownerVault,
+                details.vaultAddress,
                 { from: from, data: this.bytecode, gas: 1000000 },
                 function(e, contract) {
                     if (!e) {
@@ -696,11 +711,21 @@ export class RewardMileContract extends ContractPaper {
                             console.log("Contract transaction send: TransactionHash: " + contract.transactionHash + " waiting to be mined...");
                         } else {
                             console.log("Contract mined! Address: " + contract.address);
-                            saveDeployedContract('rewardMile', schemeName, contract.address, details);
+                            const ownerContractDetails = {
+                                owner: details.owner,
+                                contractType: details.contractType,
+                                partners: partnersInfo,
+                                vaultAddress: details.vaultAddress,
+                                description: details.description,
+                                instructions: details.instructions,
+                                requiredInputs: details.requiredInputs
+                            }
+                            saveDeployedContract('rewardMile', schemeName, contract.address, ownerContractDetails);
 
                             const rewardMile = new ContractPaper('rewardMile', 'RewardMile', ['rewardMile', 'vault']);
                             const contractInstance = rewardMile.contract.at(contract.address);
                             const testEvent = eval('contractInstance.' + 'TestFunction()');
+
                             testEvent.watch((error, result) => {
                                 if (error) {
                                     console.log(error);
@@ -711,6 +736,7 @@ export class RewardMileContract extends ContractPaper {
                             });
 
                             const validEvent = contractInstance.AgreementValid();
+
                             validEvent.watch((error, result) => {
                                 if (error) {
                                     console.log(error);
@@ -731,22 +757,26 @@ export class RewardMileContract extends ContractPaper {
                                 requiredInputs: details.requiredInputs,
                                 description: details.description,
                                 instructions: details.instructions,
-                                conractType: 'rewardMile',
-                                partners: details.partners
+                                contractType: 'rewardMile',
+                                contractAddress: contract.address,
+                                // vvv Contract Specific Details vvv
+                                partners: partnersInfo
                             }
 
-                            request({
-                                url: 'http://localhost:3000/api/v1/business/collaboration/request',
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'Accept': 'application/json'
-                                },
-                                json: true,
-                                body: collaborationRequestObject
-                            }, (err, res, body) => {
-                                console.log(body);
-                            });
+                            for (var i in details.partners) {
+                                request({
+                                    url: 'http://localhost:3000/api/v1/business/collaboration/request/' + details.partners[i],
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'Accept': 'application/json'
+                                    },
+                                    json: true,
+                                    body: collaborationRequestObject
+                                }, (err, res, body) => {
+                                    console.log(body);
+                                });
+                            }
                         }
                     }
                 }

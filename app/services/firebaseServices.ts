@@ -15,7 +15,7 @@ firebase.initializeApp(config);
 const database = firebase.database();
 
 /* @ CONTRACTS */
-export function saveDeployedContract(contractType: string, schemeName: string, contractAddress: number, details: ContractParameters): void {
+export function saveDeployedContract(contractType: string, schemeName: string, contractAddress: number, details): void {
     if (contractType === 'vault') {
         saveVaultContract(schemeName, contractAddress, details);
     } else if (contractType === 'fx') {
@@ -29,7 +29,7 @@ function saveRewardMileContract(schemeName: string, contractAddress: number, det
     database.ref('schemes/' + details.owner + '/' + schemeName).set({
         contractType: details.contractType,
         partners: details.partners,
-        ownerVault: details.ownerVault,
+        ownerVault: details.vaultAddress,
         description: details.description,
         instructions: details.instructions,
         requiredInputs: details.requiredInputs,
@@ -51,7 +51,7 @@ function saveVaultContract(schemeName: string, contractAddress: number, details)
 }
 
 function saveFxContract(schemeName: string, contractAddress: number, details): void {
-    database.ref('schemes/' + details.requester + '/' + schemeName).set({
+    database.ref('schemes/' + details.owner + '/' + schemeName).set({
         requestedPartner: details.requestedPartner,
         contractType: details.contractType,
         contractAddress: contractAddress,
@@ -236,20 +236,10 @@ export function saveBusinessDetails(business: string, details: BusinessDetails):
     });
 }
 
-export function queueCollaborationRequest(provider: string, requester: string, requestedPartner: string, schemeName: string, contractType: string, contractAddress: string, description: string, instructions: string, requiredInputs: string, toPartnerFx: number, toOwnerFx: number): boolean {
-    database.ref('schemes/' + requestedPartner + '/collaborationRequests/' + schemeName).set({
-        provider: provider,
-        requester: requester,
-        schemeName: schemeName,
-        contractType: contractType,
-        contractAddress: contractAddress,
-        description: description,
-        instructions: instructions,
-        requiredInputs: requiredInputs,
-        toPartnerFx: toPartnerFx,
-        toOwnerFx: toOwnerFx,
-        requestDate: new Date().getTime(),
-    });
-    database.ref('businesses/' + requestedPartner + '/' + 'collaborationRequests').child(schemeName).set(true);
+export function queueCollaborationRequest(business: string, collabInfo): boolean {
+    console.log(business);
+    collabInfo['requestDate'] = new Date().getTime(),
+    database.ref('schemes/' + business + '/collaborationRequests/' + collabInfo.schemeName).set(collabInfo);
+    database.ref('businesses/' + business + '/' + 'collaborationRequests').child(collabInfo.schemeName).set(true);
     return true;
 }
