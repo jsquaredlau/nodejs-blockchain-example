@@ -3,3 +3,4 @@
 // export * from './welcomeController';
 export * from './userController';
 export * from './businessController';
+export * from './merchantController';

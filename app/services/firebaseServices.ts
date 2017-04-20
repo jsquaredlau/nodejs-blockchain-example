@@ -14,6 +14,46 @@ const config = {
 firebase.initializeApp(config);
 const database = firebase.database();
 
+/* @ USERS */
+export function searchUser(fbId: string): Q.Promise<any> {
+    return Q.Promise((resolve, reject, notify) => {
+        database.ref('users/' + fbId).once('value')
+        .then((snapshot) => {
+            resolve(snapshot.val());
+        });
+    });
+}
+
+/* @ MERCHANTS */
+export function searchDistributableSchemes(business: string): Q.Promise<any> {
+    return Q.Promise((resolve, reject, notify) => {
+        const applicableContracts = [];
+        firebase.database().ref('schemes/' + business)
+        .once('value')
+        .then((snapshot) => {
+            for (const scheme in snapshot.val()) {
+                if (snapshot.val()[scheme].contractType === 'vault' || snapshot.val()[scheme].contractType === 'rewardMile') {
+                    applicableContracts.push({address: snapshot.val()[scheme].contractAddress, type: snapshot.val()[scheme].contractType})
+                }
+            }
+            resolve(applicableContracts);
+        });
+    })
+}
+
+export function findVault(business: string): Q.Promise<any> {
+    return Q.Promise((resolve, reject, notify) => {
+        database.ref('schemes/' + business).once('value')
+        .then((snapshot) => {
+            for (const scheme in snapshot.val()) {
+                if (snapshot.val()[scheme].contractType === 'vault') {
+                    resolve(snapshot.val()[scheme].contractAddress);
+                }
+            }
+        })
+    });
+}
+
 /* @ CONTRACTS */
 export function saveDeployedContract(contractType: string, schemeName: string, contractAddress: number, details): void {
     if (contractType === 'vault') {

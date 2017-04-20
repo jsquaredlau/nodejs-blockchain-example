@@ -69,6 +69,7 @@ contract Vault {
             old = balanceOf[account];
             balanceOf[account] = 0;
             DecreaseBalance('SUCCES', msg.sender, account, old, value, balanceOf[account]);
+            return balanceOf[account];
         } else {
             old = balanceOf[account];
             balanceOf[account] -= value;

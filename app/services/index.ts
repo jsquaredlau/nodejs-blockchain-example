@@ -2,3 +2,4 @@
 // export * from './solidityOps';
 export * from './firebaseServices';
 export * from './loyaltySchemeServices';
+export * from './merchantServices';

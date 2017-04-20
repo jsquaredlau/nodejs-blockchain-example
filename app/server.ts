@@ -5,7 +5,7 @@
 import * as express from 'express';
 
 // Import WelcomeController from controllers entry point
-import { UserController, BusinessController } from './controllers';
+import { UserController, BusinessController, MerchantController } from './controllers';
 
 const bodyParser = require('body-parser');
 const cors = require('cors');
@@ -24,6 +24,8 @@ app.use(bodyParser.json());
 app.use('/api/v1/user', UserController);
 
 app.use('/api/v1/business', BusinessController);
+
+app.use('/api/v1/merchant', MerchantController);
 
 // app.user('/api/v1/laas', LaasController);
 

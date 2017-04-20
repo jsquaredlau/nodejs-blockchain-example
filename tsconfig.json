@@ -21,6 +21,7 @@
     "files": [
         "app/controllers/businessController.ts",
         "app/controllers/index.ts",
+        "app/controllers/merchantController.ts",
         "app/controllers/userController.ts",
         "app/controllers/welcomeController.ts",
         "app/models/index.ts",
@@ -29,6 +30,7 @@
         "app/services/firebaseServices.ts",
         "app/services/index.ts",
         "app/services/loyaltySchemeServices.ts",
+        "app/services/merchantServices.ts",
         "app/services/solidityOps.ts",
         "app/services/web3Services.ts"
     ]
