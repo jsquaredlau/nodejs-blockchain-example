@@ -15,9 +15,9 @@ firebase.initializeApp(config);
 const database = firebase.database();
 
 /* @ USERS */
-export function searchUser(fbId: string): Q.Promise<any> {
+export function searchUser(business: string, fbId: string): Q.Promise<any> {
     return Q.Promise((resolve, reject, notify) => {
-        database.ref('users/' + fbId).once('value')
+        database.ref('customers/' + business + '/' + fbId).once('value')
         .then((snapshot) => {
             resolve(snapshot.val());
         });
@@ -67,6 +67,7 @@ export function saveDeployedContract(contractType: string, schemeName: string, c
 
 function saveRewardMileContract(schemeName: string, contractAddress: number, details): void {
     database.ref('schemes/' + details.owner + '/' + schemeName).set({
+        contractAddress: contractAddress,
         contractType: details.contractType,
         partners: details.partners,
         ownerVault: details.vaultAddress,

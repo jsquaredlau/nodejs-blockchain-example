@@ -135,8 +135,8 @@ export function runContract(business: string, schemeType: string, schemeName: st
                             collectionEvent.stopWatching();
                         }
                     });
-                    eval('contractInstance.increaseBalance(web3.eth.accounts[1], 100)')
-                    // contractInstance.increaseBalance(web3.eth.accounts[1], 100);
+                    // eval('contractInstance.increaseBalance(web3.eth.accounts[1], 100)')
+                    contractInstance.increaseBalance(details.accountAddress, 100);
                     resolve({ status: 200 })
                 })
                 .fail((error) => {

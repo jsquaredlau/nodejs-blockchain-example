@@ -3,7 +3,7 @@
 
 // MODULE IMPORTS
 import { Router, Request, Response } from 'express';
-import { distributePoints, redeemPoints } from '../services';
+import { distributePoints, redeemPoints, searchUser } from '../services';
 
 const router: Router = Router();
 
