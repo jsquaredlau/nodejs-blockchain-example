@@ -34,7 +34,7 @@ export function redeemPoints(business: string, fbId: string, customerAddress: st
                 resolve(result);
             })
             .fail((error) => {
-                reject({});
+                reject(error);
             });
         })
         .fail((error) => {
@@ -107,13 +107,13 @@ function processRedemption(contractAddress: string, customerAddress: string, poi
                 console.log('Contract Type : ' + 'vault');
                 console.log('Contract at : ' + contractAddress);
                 console.log('Rewarded Customer : ' + customerAddress);
-                console.log('Redemption result : ' + result.status);
-                console.log('Old Balance : ' + result.oldBalance);
-                console.log('New Balance : ' + result.newBalance);
+                console.log('Redemption result : ' + result.args.status);
+                console.log('Old Balance : ' + result.args.oldBalance);
+                console.log('New Balance : ' + result.args.newBalance);
                 if (result.status === 'SUCESS') {
                     resolve({});
                 } else {
-                    reject({});
+                    reject({error: 'Insufficient balance'});
                 }
             }
         });

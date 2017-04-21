@@ -41,9 +41,10 @@ router.post('/:business/points/redeem', (req: Request, res: Response) => {
     const { business } = req.params;
     const redemptionInfo = req.body
 
-    console.log('## ' + ' Received Point Distribution Request from [ ' + business + ' ] ##');
+    console.log('### ' + ' Received Point Redemption Request from [ ' + business + ' ] ###');
     console.log('Customer : ' + redemptionInfo.fbId);
     console.log('Points used : ' + redemptionInfo.points);
+    console.log();
 
     redeemPoints(business, redemptionInfo.fbId, redemptionInfo.customerAddress, redemptionInfo.points)
     .then((result) => {
