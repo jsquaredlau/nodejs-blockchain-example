@@ -7,6 +7,9 @@ import { ContractPaper } from './loyaltySchemeServices';
 const Web3 = require('web3');
 const solc = require('solc');
 
+const web3 = new Web3();
+web3.setProvider(new web3.providers.HttpProvider('http://localhost:8545'));
+
 export function distributePoints(business: string, fbId: string, customerAddress: string, points: number): Q.Promise<{}> {
     return Q.Promise((resolve, reject, notify) => {
         searchDistributableSchemes(business)
@@ -57,13 +60,14 @@ function sendTxToContract(business: string, customerAddress: string, points: num
                 console.log('Old Balance : ' + result.args.oldBalance);
                 console.log('New Balance : ' + result.args.newBalance);
                 console.log('Points Earned : ' + result.args.amount);
+                console.log();
                 distributeEvent.stopWatching();
             }
         });
         contractInstance.increaseBalance(customerAddress, points);
     } else if (scheme.type === 'rewardMile') {
         paper = new ContractPaper('rewardMile', 'RewardMile', ['rewardMile', 'vault']);
-        const contractInstance = paper.contract.at(scheme.contractAddress);
+        const contractInstance = paper.contract.at(scheme.address);
         const txReceiptEvent = contractInstance.TxReceived();
         txReceiptEvent.watch((error, result) => {
             if (error) {
@@ -74,16 +78,17 @@ function sendTxToContract(business: string, customerAddress: string, points: num
                 console.log('Contract at : ' + scheme.address);
                 console.log('Customer : ' + customerAddress);
                 console.log('Customer FB ID : ' + fbId);
-                console.log('From Business : ' + result.fromBusiness);
+                console.log('From Business : ' + result.args.fromBusiness);
+                console.log();
                 txReceiptEvent.stopWatching();
             }
         });
         if (business === 'BASYXLab') {
-            contractInstance.processTx(Web3.eth.accounts[0], customerAddress, fbId);
+            contractInstance.processTx(web3.eth.accounts[0], customerAddress, fbId);
         } else if (business === 'NeikidFyre') {
-            contractInstance.processTx(Web3.eth.accounts[1], customerAddress, fbId);
+            contractInstance.processTx(web3.eth.accounts[1], customerAddress, fbId);
         } else if (business === 'Ataraxia') {
-            contractInstance.processTx(Web3.eth.accounts[2], customerAddress, fbId);
+            contractInstance.processTx(web3.eth.accounts[2], customerAddress, fbId);
         }
     }
 }

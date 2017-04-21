@@ -704,7 +704,7 @@ export class RewardMileContract extends ContractPaper {
                 partnerAddresses,
                 details.ownerRewardAllocation,
                 details.vaultAddress,
-                { from: from, data: this.bytecode, gas: 1000000 },
+                { from: from, data: this.bytecode, gas: 2000000 },
                 function(e, contract) {
                     if (!e) {
                         if (!contract.address) {

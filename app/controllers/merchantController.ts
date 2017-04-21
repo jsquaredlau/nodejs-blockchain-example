@@ -26,6 +26,7 @@ router.post('/:business/points/distribute', (req: Request, res: Response) => {
     console.log('## ' + ' Received Point Distribution Request from [ ' + business + ' ] ##');
     console.log('Customer : ' + distributionInfo.fbId);
     console.log('Points earned : ' + distributionInfo.points);
+    console.log();
 
     distributePoints(business, distributionInfo.fbId, distributionInfo.customerAddress, distributionInfo.points)
     .then((result) => {
