@@ -3,7 +3,7 @@
 
 // MODULE IMPORTS
 import { Router, Request, Response } from 'express';
-import { distributePoints, redeemPoints, searchUser, retrieveMembershipList, retrieveMembershipId, retrieveBusinsessList, checkCustomerPointBalance } from '../services';
+import { distributePoints, redeemPoints, searchUser, retrieveMembershipList, retrieveMembershipId, retrieveBusinsessList, checkCustomerPointBalance, registerNewUser } from '../services';
 
 const router: Router = Router();
 
@@ -16,7 +16,15 @@ const router: Router = Router();
 
 /* @ LAAS */
 router.post('/laas/:business/user/new', (req: Request, res: Response) => {
-
+    const { business } = req.params;
+    console.log(req.body);
+    registerNewUser(business, req.body.fbId, req.body.password)
+    .then((result) => {
+        res.status(200).send(result);
+    })
+    .fail((error) => {
+        res.status(500).send(error);
+    })
 });
 
 router.get('/laas/businesses', (req: Request, res: Response) => {
@@ -28,7 +36,6 @@ router.get('/laas/businesses', (req: Request, res: Response) => {
         res.status(500).send(error);
     });
 });
-
 
 /* @ USER */
 router.post('/user/:business/points/check', (req: Request, res: Response) => {

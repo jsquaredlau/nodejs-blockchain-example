@@ -1,11 +1,12 @@
 // Copyright BASYX.lab
 import * as Q from 'q';
 import { ContractPaper } from './loyaltySchemeServices';
-import { queryCutomerMembership, queryCustomerMemberShipId, queryBusinessList, findVault } from './firebaseServices';
+import { queryCutomerMembership, queryCustomerMemberShipId, queryBusinessList, findVault, saveNewUser } from './firebaseServices';
 
 // LIBRARY IMPORTS
 const Web3 = require('web3');
 const solc = require('solc');
+const lightwallet = require('eth-lightwallet');
 
 const web3 = new Web3();
 web3.setProvider(new web3.providers.HttpProvider('http://localhost:8545'));
@@ -79,5 +80,28 @@ export function checkCustomerPointBalance(business: string, fbId: string, custom
         .fail((error) => {
             reject(error);
         })
+    });
+}
+
+export function registerNewUser(business: string, fbId: string, pw?: string): Q.Promise<{}> {
+    return Q.Promise((resolve, reject, notify) => {
+        lightwallet.keystore.createVault({
+            password: fbId,
+        }, function (err, ks) {
+
+            // Some methods will require providing the `pwDerivedKey`,
+            // Allowing you to only decrypt private keys on an as-needed basis.
+            // You can generate that value with this convenient method:
+            ks.keyFromPassword(fbId, function (err, pwDerivedKey) {
+                if (err) {
+                    reject(err);
+                }
+
+                ks.generateNewAddress(pwDerivedKey, 1);
+                const addr = ks.getAddresses();
+                saveNewUser(business, fbId, '0x' + addr[0]);
+                resolve('0x' + addr[0]);
+            });
+        });
     });
 }

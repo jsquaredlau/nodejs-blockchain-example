@@ -104,6 +104,12 @@ export function queryBusinessList(): Q.Promise<{}> {
     });
 }
 
+export function saveNewUser(business: string, fbId: string, address: string): void {
+    database.ref('users/' + address).set(fbId);
+    database.ref('customers/' + business + '/' + fbId).set(address);
+    database.ref('memberships/' + fbId + '/' + business).set(address);
+}
+
 /* @ CONTRACTS */
 export function saveDeployedContract(contractType: string, schemeName: string, contractAddress: number, details): void {
     if (contractType === 'vault') {
@@ -315,7 +321,6 @@ function moveFbRecord(oldRef, newRef) {
 }
 
 /* @ BUSINESSES */
-
 export function saveBusinessDetails(business: string, details: BusinessDetails): Q.Promise<{}> {
     return Q.Promise((resolve, reject, notify) => {
         firebase.database().ref('businesses/' + business + '/' + 'details').set(details)
@@ -333,22 +338,4 @@ export function queueCollaborationRequest(business: string, collabInfo): boolean
     database.ref('schemes/' + business + '/collaborationRequests/' + collabInfo.schemeName).set(collabInfo);
     database.ref('businesses/' + business + '/' + 'collaborationRequests').child(collabInfo.schemeName).set(true);
     return true;
-}
-
-export function findVaultAddress(business: string): string {
-    let vaultAddress = null;
-    database.ref('schemes/' + business).once('value')
-    .then((snapshot) => {
-        console.log(snapshot.val());
-        for (const scheme in snapshot.val()) {
-            console.log(scheme);
-            console.log(snapshot.val()[scheme]);
-            if (snapshot.val()[scheme].contractType === 'vault') {
-                vaultAddress = snapshot.val()[scheme].contractAddress;
-                console.log(vaultAddress);
-            }
-        }
-        return vaultAddress;
-    });
-    return vaultAddress;
 }
