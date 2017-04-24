@@ -14,6 +14,7 @@ contract Vault {
     event IncreaseBalance(string status, address indexed from, address indexed to, uint256 oldBalance, uint256 amount, uint256 newBalance);
     event DecreaseBalance(string status, address indexed from, address indexed to, uint256 oldBalance, uint256 amount, uint256 newBalance);
     event ManipulateBalance(string status, address indexed from, address indexed to, uint256 oldBalance, uint256 newBalance);
+    event BalanceCheck(string status, address indexed from, address indexed customer, uint256 balance);
 
     /* CONSTRUCTOR */
     function Valut(string _vaultName, string _tokenName) {
@@ -91,6 +92,12 @@ contract Vault {
             ManipulateBalance('SUCCES',msg.sender, account, old, balanceOf[account]);
             return balanceOf[account];
         }
+    }
+
+    function balanceCheck(address account) returns (uint256 balance) {
+        uint256 accountBalance = balanceOf[account];
+        BalanceCheck('SUCCESS', msg.sender, account, accountBalance);
+        return accountBalance;
     }
 
     // TODO: implement this

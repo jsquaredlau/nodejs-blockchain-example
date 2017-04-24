@@ -45,12 +45,62 @@ export function findVault(business: string): Q.Promise<any> {
     return Q.Promise((resolve, reject, notify) => {
         database.ref('schemes/' + business).once('value')
         .then((snapshot) => {
+            let vaultAddress: string = null;
+            console.log(snapshot.val());
             for (const scheme in snapshot.val()) {
                 if (snapshot.val()[scheme].contractType === 'vault') {
-                    resolve(snapshot.val()[scheme].contractAddress);
+                    vaultAddress = snapshot.val()[scheme].contractAddress;
+                    break;
                 }
             }
+            if (vaultAddress !== null) {
+                resolve(vaultAddress);
+            } else {
+                reject({error: 'No vault contract'});
+            }
         })
+    });
+}
+
+/* @ MOBILE */
+export function queryCutomerMembership(fbId: string): Q.Promise<{}> {
+    return Q.Promise((resolve, reject, notify) => {
+        database.ref('/memberships/' + fbId).once('value')
+        .then((snapshot) => {
+            resolve(snapshot.val());
+        }, (error) => {
+            reject({error: 'Customer does not exist'});
+        });
+    });
+}
+
+export function queryCustomerMemberShipId(business: string, fbId: string): Q.Promise<{}> {
+    return Q.Promise((resolve, reject, notify) => {
+        database.ref('/memberships/' + fbId + '/' + business).once('value')
+        .then((snapshot) => {
+            if (snapshot.val() !== null){
+                resolve(snapshot.val());
+            } else {
+                reject({error: 'No such customer membership'});
+            }
+        }, (error) => {
+            reject({error: 'No such customer'});
+        });
+    });
+}
+
+export function queryBusinessList(): Q.Promise<{}> {
+    return Q.Promise((resolve, reject, notify) => {
+        database.ref('/businesses').once('value')
+        .then((snapshot) => {
+            const listOfBusinesses = [];
+            for (const business in snapshot.val()) {
+                listOfBusinesses.push(business);
+            }
+            resolve(listOfBusinesses);
+        }, (error) => {
+            reject(error);
+        });
     });
 }
 
@@ -283,4 +333,22 @@ export function queueCollaborationRequest(business: string, collabInfo): boolean
     database.ref('schemes/' + business + '/collaborationRequests/' + collabInfo.schemeName).set(collabInfo);
     database.ref('businesses/' + business + '/' + 'collaborationRequests').child(collabInfo.schemeName).set(true);
     return true;
+}
+
+export function findVaultAddress(business: string): string {
+    let vaultAddress = null;
+    database.ref('schemes/' + business).once('value')
+    .then((snapshot) => {
+        console.log(snapshot.val());
+        for (const scheme in snapshot.val()) {
+            console.log(scheme);
+            console.log(snapshot.val()[scheme]);
+            if (snapshot.val()[scheme].contractType === 'vault') {
+                vaultAddress = snapshot.val()[scheme].contractAddress;
+                console.log(vaultAddress);
+            }
+        }
+        return vaultAddress;
+    });
+    return vaultAddress;
 }

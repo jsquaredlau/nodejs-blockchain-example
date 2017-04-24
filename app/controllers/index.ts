@@ -4,3 +4,4 @@
 export * from './userController';
 export * from './businessController';
 export * from './merchantController';
+export * from './mobileController';
