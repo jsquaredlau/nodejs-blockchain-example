@@ -35,14 +35,11 @@ router.post('/:business/:contractType/:schemeName/deploy', (req: Request, res: R
     const { business, contractType, schemeName } = req.params;
     const contractParameters = req.body;
     contractParameters['owner'] = business;
-    console.log(contractParameters);
     deployContract(business, contractType, schemeName, contractParameters)
         .then((result) => {
-            console.log(result);
             res.status(200).send('Contract Deployed!');
         })
         .fail((error) => {
-            console.log(error);
             res.status(500).send('Contract deployment failed. Please try again');
         });
 });
@@ -62,9 +59,6 @@ router.post('/collaboration/request/:business', (req: Request, res: Response) =>
 router.post('/collaboration/:business/accept/:scheme', (req: Request, res: Response) => {
     const { business, scheme } = req.params;
     const postValues = req.body;
-    console.log('##############');
-    console.log(postValues);
-    console.log('##############');
     parseCollaborationAcceptance(business, scheme.replace('%20', ' '), postValues)
         .then((result) => {
             res.status(200).send('Collaboration Complete');

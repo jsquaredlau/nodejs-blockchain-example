@@ -46,7 +46,6 @@ export function findVault(business: string): Q.Promise<any> {
         database.ref('schemes/' + business).once('value')
         .then((snapshot) => {
             let vaultAddress: string = null;
-            console.log(snapshot.val());
             for (const scheme in snapshot.val()) {
                 if (snapshot.val()[scheme].contractType === 'vault') {
                     vaultAddress = snapshot.val()[scheme].contractAddress;
@@ -332,7 +331,6 @@ export function saveBusinessDetails(business: string, details: BusinessDetails):
 }
 
 export function queueCollaborationRequest(business: string, collabInfo): boolean {
-    console.log(business);
     collabInfo['requestDate'] = new Date().getTime(),
     database.ref('schemes/' + business + '/collaborationRequests/' + collabInfo.schemeName).set(collabInfo);
     database.ref('businesses/' + business + '/' + 'collaborationRequests').child(collabInfo.schemeName).set(true);

@@ -17,7 +17,6 @@ const router: Router = Router();
 /* @ LAAS */
 router.post('/laas/:business/user/new', (req: Request, res: Response) => {
     const { business } = req.params;
-    console.log(req.body);
     registerNewUser(business, req.body.fbId, req.body.password)
     .then((result) => {
         res.status(200).send(result);
@@ -91,7 +90,6 @@ router.get('/:business/fx/list', (req: Request, res: Response) => {
 
 router.post('/:business/fx/check', (req: Request, res: Response) => {
     const { business } = req.params;
-    console.log(req.body);
     checkPointConversion(business, req.body.schemeName, parseInt(req.body.amountToConvert))
     .then((result) => {
         res.status(200).send(result);

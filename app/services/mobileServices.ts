@@ -51,8 +51,6 @@ export function checkCustomerPointBalance(business: string, fbId: string, custom
     return Q.Promise((resolve, reject, notify) => {
         findVault(business)
         .then((vaultAddress) => {
-            console.log('********** DEV : Vault address is : ' + vaultAddress);
-
             const vaultInstance = new ContractPaper('vault', 'Vault');
 
             const contractInstance = vaultInstance.contract.at(vaultAddress);
@@ -74,8 +72,6 @@ export function checkCustomerPointBalance(business: string, fbId: string, custom
             });
 
             contractInstance.balanceCheck(customerAddress);
-
-            console.log('********** DEV : Finished checkCustomerPointBalance');
         })
         .fail((error) => {
             reject(error);
@@ -124,8 +120,6 @@ export function checkPointConversion(business: string, schemeName: string, amoun
     return Q.Promise((resolve, reject, notify) => {
         findContractAddress(business, schemeName)
         .then((contractAddress) => {
-            console.log('********** DEV : FX address is : ' + contractAddress);
-
             const fxInstance = new ContractPaper('fx', 'FX', ['fx', 'vault']);
             const contractInstance = fxInstance.contract.at(contractAddress);
             const fxConversionDryrunEvent = contractInstance.ConversionDryrun();
@@ -158,7 +152,6 @@ export function checkPointConversion(business: string, schemeName: string, amoun
             } else {
                 contractInstance.conversionDryrun(web3.eth.accounts[2], amount);
             }
-            console.log('********** DEV : Finished checkPointConversion');
         })
         .fail((error) => {
             reject(error);
@@ -170,8 +163,6 @@ export function makePointConversion(business: string, schemeName: string, amount
     return Q.Promise((resolve, reject, notify) => {
         findContractAddress(business, schemeName)
         .then((contractAddress) => {
-            console.log('********** DEV : FX address is : ' + contractAddress);
-
             const fxInstance = new ContractPaper('fx', 'FX', ['fx', 'vault']);
             const contractInstance = fxInstance.contract.at(contractAddress);
             const transferEvent = contractInstance.Transfer();
@@ -211,7 +202,6 @@ export function makePointConversion(business: string, schemeName: string, amount
             } else {
                 contractInstance.transfer(web3.eth.accounts[2], customerFromAddress, customerToAddress, amount);
             }
-            console.log('********** DEV : Finished makePointConversion');
         })
         .fail((error) => {
             reject(error);
