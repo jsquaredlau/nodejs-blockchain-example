@@ -147,7 +147,6 @@ export function checkPointConversion(business: string, schemeName: string, amoun
                     console.log();
                     resolve({
                         amountToConvert: result.args.amountToConvert,
-                        conversionRate: result.args.conversionRate,
                         amountReceivable: result.args.amountReceivable
                     });
                 }
@@ -159,8 +158,6 @@ export function checkPointConversion(business: string, schemeName: string, amoun
             } else {
                 contractInstance.conversionDryrun(web3.eth.accounts[2], amount);
             }
-            contractInstance.conversionDryrun(web3.eth.accounts[0], amount);
-
             console.log('********** DEV : Finished checkPointConversion');
         })
         .fail((error) => {
@@ -171,6 +168,53 @@ export function checkPointConversion(business: string, schemeName: string, amoun
 
 export function makePointConversion(business: string, schemeName: string, amount: number, customerFromAddress: string, customerToAddress: string): Q.Promise<{}> {
     return Q.Promise((resolve, reject, notify) => {
+        findContractAddress(business, schemeName)
+        .then((contractAddress) => {
+            console.log('********** DEV : FX address is : ' + contractAddress);
 
+            const fxInstance = new ContractPaper('fx', 'FX', ['fx', 'vault']);
+            const contractInstance = fxInstance.contract.at(contractAddress);
+            const transferEvent = contractInstance.Transfer();
+
+            transferEvent.watch((error, result) => {
+                if (error) {
+                    console.log(error);
+                    reject({});
+                } else {
+                    transferEvent.stopWatching();
+                    console.log(result.args);
+                    console.log('### FX Transfer Event ###');
+                    console.log('Status : ' + result.args.status);
+                    console.log('Contract at : ' + contractAddress);
+                    console.log('From business : ' + result.args.fromBusiness);
+                    console.log('From account : ' + result.args.fromAccount);
+                    console.log('To account : ' + result.args.toAccount);
+                    console.log('Amount to convert : ' + result.args.amountConverted);
+                    console.log('Amount receivable : ' + result.args.amountReceived);
+                    console.log();
+                    if (result.args.status === 'SUCCESS') {
+                        resolve({
+                            amountToConvert: result.args.amountToConvert,
+                            fromAccount: result.args.fromAccount,
+                            toAccount: result.args.toAccount,
+                            amountReceivable: result.args.amountReceivable
+                        });
+                    } else {
+                        reject({status: 'Point conversion failed'});
+                    }
+                }
+            });
+            if (business === 'BASYXLab') {
+                contractInstance.transfer(web3.eth.accounts[0], customerFromAddress, customerToAddress, amount);
+            } else if (business === 'NeikidFyre') {
+                contractInstance.transfer(web3.eth.accounts[1], customerFromAddress, customerToAddress, amount);
+            } else {
+                contractInstance.transfer(web3.eth.accounts[2], customerFromAddress, customerToAddress, amount);
+            }
+            console.log('********** DEV : Finished makePointConversion');
+        })
+        .fail((error) => {
+            reject(error);
+        })
     });
 }

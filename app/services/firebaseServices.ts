@@ -149,6 +149,7 @@ function saveVaultContract(schemeName: string, contractAddress: number, details)
 
 function saveFxContract(schemeName: string, contractAddress: number, details): void {
     database.ref('schemes/' + details.owner + '/' + schemeName).set({
+        owner: details.owner,
         requestedPartner: details.requestedPartner,
         contractType: details.contractType,
         contractAddress: contractAddress,
@@ -270,7 +271,7 @@ export function findContractAddress(business: string, schemeName: string, collab
                     if (snapshot.val() !== null) {
                         resolve(snapshot.val());
                     } else {
-                        resolve(null);
+                        reject({error: 'No such contract'});
                     }
                 }, (errror) => {
                     reject(new Error('Query for ' + schemeName + ' contract address failed.'));
@@ -281,7 +282,7 @@ export function findContractAddress(business: string, schemeName: string, collab
                     if (snapshot.val() !== null) {
                         resolve(snapshot.val());
                     } else {
-                        resolve(null);
+                        reject({error: 'No such contract'});
                     }
                 }, (error) => {
                     reject(new Error('Query for ' + schemeName + ' contract address failed.'));

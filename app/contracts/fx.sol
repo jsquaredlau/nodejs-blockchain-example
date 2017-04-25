@@ -47,7 +47,7 @@ contract FX {
         }
     }
 
-    function transfer(address fromAccount, address toAccount, address fromBusiness, address toBusiness, uint256 amountToConvert) {
+    function transfer(address fromBusiness, address fromAccount, address toAccount, uint256 amountToConvert) {
         if (agreementValid()) {
             uint256 amountReceivable;
             if (fromBusiness == owner) {
