@@ -47,7 +47,6 @@ contract MyToken {
                 Redemption(msg.sender, _customer, 3, _item, 'success');
             } else {
                 Redemption(msg.sender, _customer, 3, _item, 'failure');
-                /*throw;*/
             }
         } else if (sha3(_item) == sha3("coke")) {
             if (balanceOf[_customer] >= 1) {
@@ -56,7 +55,6 @@ contract MyToken {
                 Redemption(msg.sender, _customer, 1, _item, 'success');
             } else {
                 Redemption(msg.sender, _customer, 1, _item, 'failure');
-                /*throw;*/
             }
         }
     }

@@ -45,7 +45,15 @@ function fxDeployment(business: string, schemeName: string, details): Q.Promise<
             reject({ status: 'Insufficient parameters passed' });
         } else {
             const contract = new FxContract('FX', [details.vaultAddress, details.toPartnerFx, details.toOwnerFx]);
-            contract.deployContract(web3.eth.accounts[0], schemeName, details)
+            let owner;
+            if (business === 'BASYXLab') {
+                owner = web3.eth.accounts[0];
+            } else if (business === 'NeikidFyre') {
+                owner = web3.eth.accounts[1];
+            } else {
+                owner = web3.eth.accounts[2];
+            }
+            contract.deployContract(owner, schemeName, details)
                 .then((result) => {
                     resolve({ status: 200 });
                 })
@@ -475,11 +483,10 @@ export class FxContract extends ContractPaper {
 
         return Q.Promise((resolve, reject, notify) => {
             resolve(this.contract.new(
-                contractOwnerAddress,
+                from,
                 this.parameters[0],// vaultLocation
-                this.parameters[1],// partnerBusiness
-                this.parameters[2],// toPartnerFx
-                this.parameters[3],// toOwnerFx
+                this.parameters[1],// toPartnerFx
+                this.parameters[2],// toOwnerFx
                 { from: from, data: this.bytecode, gas: 1000000 },
                 function(e, contract) {
                     if (!e) {

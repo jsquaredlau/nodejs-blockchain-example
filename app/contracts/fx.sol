@@ -18,6 +18,8 @@ contract FX {
     event AcceptAgreement(string status, address indexed acceptedBy);
     event VoidAgreement(string status, address indexed voidedBy);
     event TestFunction(string status, string message);
+    /*event ConversionDryrun(string status, address indexed fromBusiness, uint256 amountToConvert, uint256 amountReceivable);*/
+    event ConversionDryrun(string status, address indexed fromBusiness, address indexed owner, address indexed partner, uint256 amountToConvert, uint256 amountReceivable);
 
     /* CONSTRUCTOR */
     function FX(address _contractOwner, address _vaultLocation, uint256 _toPartnerX, uint256 _toOwnerX) {
@@ -27,48 +29,50 @@ contract FX {
         toPartnerX = _toPartnerX;
         toOwnerX = _toOwnerX;
         vOwnerBusiness = Vault(_vaultLocation);
-        /*ContractBuilt('SUCCESS');*/
     }
 
-    /*function transfer (uint256 amountToConvert, address fromAccount, address toAccount) {
-        if (agreementValid()) {
-            uint256 amountReceivable;
-            if (msg.sender == owner) {
-                amountReceivable = toPartnerX * ( amountToConvert / toOwnerX );
-                vOwnerBusiness.decreaseBalance(fromAccount, amountToConvert);
-                vPartnerBusiness.increaseBalance(toAccount, amountReceivable);
-                Transfer('SUCCESS', msg.sender, fromAccount, toAccount, amountToConvert, amountReceivable);
-            } else if (msg.sender == partnerBusiness) {
-                amountReceivable = toOwnerX * ( amountToConvert / toPartnerX );
-                vOwnerBusiness.increaseBalance(fromAccount, amountReceivable);
-                vPartnerBusiness.decreaseBalance(toAccount, amountToConvert);
-                Transfer('SUCCESS', msg.sender, fromAccount, toAccount, amountToConvert, amountReceivable);
-            } else {
-                throw;
-            }
+    function conversionDryrun(address fromBusiness, uint256 amountToConvert) {
+        uint256 amountReceivable;
+        if (fromBusiness == owner) {
+            amountReceivable = toPartnerX * ( amountToConvert / toOwnerX );
+            /*ConversionDryrun('SUCCESS', fromBusiness, amountToConvert, amountReceivable);*/
+            ConversionDryrun('SUCCESS', fromBusiness, owner, partnerBusiness, amountToConvert, amountReceivable);
+        } else if (fromBusiness == partnerBusiness) {
+            amountReceivable = toOwnerX * ( amountToConvert / toPartnerX );
+            /*ConversionDryrun('SUCCESS', fromBusiness, amountToConvert, amountReceivable);*/
+            ConversionDryrun('SUCCESS', fromBusiness, owner, partnerBusiness, amountToConvert, amountReceivable);
         } else {
-            throw;
+            /*ConversionDryrun('FAIL', fromBusiness, amountToConvert, 0);*/
+            ConversionDryrun('FAIL', fromBusiness, owner, partnerBusiness, amountToConvert, 0);
         }
-    }*/
+    }
 
     function transfer(address fromAccount, address toAccount, address fromBusiness, address toBusiness, uint256 amountToConvert) {
         if (agreementValid()) {
             uint256 amountReceivable;
             if (fromBusiness == owner) {
-                amountReceivable = toPartnerX * ( amountToConvert / toOwnerX );
-                vOwnerBusiness.decreaseBalance(fromAccount, amountToConvert);
-                vPartnerBusiness.increaseBalance(toAccount, amountReceivable);
-                Transfer('SUCCESS', fromBusiness, fromAccount, toAccount, amountToConvert, amountReceivable);
-            } else if (toBusiness == partnerBusiness) {
-                amountReceivable = toOwnerX * ( amountToConvert / toPartnerX );
-                vOwnerBusiness.increaseBalance(fromAccount, amountReceivable);
-                vPartnerBusiness.decreaseBalance(toAccount, amountToConvert);
-                Transfer('SUCCESS', fromBusiness, fromAccount, toAccount, amountToConvert, amountReceivable);
+                if (vOwnerBusiness.balanceCheck(fromAccount) < amountToConvert) {
+                    Transfer('FAIL', fromBusiness, fromAccount, toAccount, amountToConvert, 0);
+                } else {
+                    amountReceivable = toPartnerX * ( amountToConvert / toOwnerX );
+                    vOwnerBusiness.decreaseBalance(fromAccount, amountToConvert);
+                    vPartnerBusiness.increaseBalance(toAccount, amountReceivable);
+                    Transfer('SUCCESS', fromBusiness, fromAccount, toAccount, amountToConvert, amountReceivable);
+                }
+            } else if (fromBusiness == partnerBusiness) {
+                if (vPartnerBusiness.balanceCheck(fromAccount) < amountToConvert) {
+                    Transfer('FAIL', fromBusiness, fromAccount, toAccount, amountToConvert, 0);
+                } else {
+                    amountReceivable = toOwnerX * ( amountToConvert / toPartnerX );
+                    vPartnerBusiness.decreaseBalance(fromAccount, amountToConvert);
+                    vOwnerBusiness.increaseBalance(toAccount, amountReceivable);
+                    Transfer('SUCCESS', fromBusiness, fromAccount, toAccount, amountToConvert, amountReceivable);
+                }
             } else {
-                Transfer('FAILURE', fromBusiness, fromAccount, toAccount, amountToConvert, 0);
+                Transfer('FAIL', fromBusiness, fromAccount, toAccount, amountToConvert, 0);
             }
         } else {
-            Transfer('FAILURE', fromBusiness, fromAccount, toAccount, amountToConvert, 0);
+            Transfer('FAIL', fromBusiness, fromAccount, toAccount, amountToConvert, 0);
         }
     }
 

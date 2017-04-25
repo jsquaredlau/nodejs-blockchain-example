@@ -267,7 +267,6 @@ export function findContractAddress(business: string, schemeName: string, collab
         if (collabRequest) {
             firebase.database().ref('schemes/' + business + '/collaborationRequests/' + schemeName + '/contractAddress').once('value')
                 .then((snapshot) => {
-                    console.log('gets in here');
                     if (snapshot.val() !== null) {
                         resolve(snapshot.val());
                     } else {
@@ -279,7 +278,6 @@ export function findContractAddress(business: string, schemeName: string, collab
         } else {
             firebase.database().ref('schemes/' + business + '/' + schemeName + '/contractAddress').once('value')
                 .then((snapshot) => {
-                    console.log('no it gets inh here');
                     if (snapshot.val() !== null) {
                         resolve(snapshot.val());
                     } else {
@@ -338,4 +336,33 @@ export function queueCollaborationRequest(business: string, collabInfo): boolean
     database.ref('schemes/' + business + '/collaborationRequests/' + collabInfo.schemeName).set(collabInfo);
     database.ref('businesses/' + business + '/' + 'collaborationRequests').child(collabInfo.schemeName).set(true);
     return true;
+}
+
+/* @ FX */
+
+export function queryFxSchemes(business: string): Q.Promise<{}> {
+    return Q.Promise((resolve, reject, notify) => {
+        const fxPartners = []
+        database.ref('/schemes/' + business).once('value')
+        .then((snapshot) => {
+            for (const scheme in snapshot.val()) {
+                if (snapshot.val()[scheme].contractType === 'fx') {
+                    if (business === snapshot.val()[scheme].owner) {
+                        fxPartners.push({
+                            schemeName: scheme,
+                            partner: snapshot.val()[scheme].requestedPartner
+                        })
+                    } else {
+                        fxPartners.push({
+                            schemeName: scheme,
+                            partner: snapshot.val()[scheme].owner
+                        })
+                    }
+                }
+            }
+            resolve(fxPartners);
+        }, (error) => {
+            reject(error);
+        })
+    });
 }

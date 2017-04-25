@@ -3,7 +3,7 @@
 
 // MODULE IMPORTS
 import { Router, Request, Response } from 'express';
-import { distributePoints, redeemPoints, searchUser, retrieveMembershipList, retrieveMembershipId, retrieveBusinsessList, checkCustomerPointBalance, registerNewUser } from '../services';
+import { distributePoints, redeemPoints, searchUser, retrieveMembershipList, retrieveMembershipId, retrieveBusinsessList, checkCustomerPointBalance, registerNewUser, checkPointConversion, makePointConversion, listFxSchemes } from '../services';
 
 const router: Router = Router();
 
@@ -72,6 +72,43 @@ router.post('/user/membership/list', (req: Request, res: Response) => {
     })
     .fail((error) => {
         res.status(500).send(error);
+    });
+});
+
+/* @ FX */
+
+router.get('/:business/fx/list', (req: Request, res: Response) => {
+    const { business } = req.params;
+
+    listFxSchemes(business)
+    .then((result) => {
+        res.status(200). send(result);
+    })
+    .fail((error) => {
+        res.status(400).send(error);
+    })
+});
+
+router.post('/:business/fx/check', (req: Request, res: Response) => {
+    const { business } = req.params;
+    console.log(req.body);
+    checkPointConversion(business, req.body.schemeName, parseInt(req.body.amountToConvert))
+    .then((result) => {
+        res.status(200).send(result);
+    })
+    .fail((error) => {
+        res.status(400).send(error);
+    });
+});
+
+router.post('/:business/fx/convert', (req: Request, res: Response) => {
+    const { business } = req.params;
+    makePointConversion(business, req.body.schemeName, req.body.amountToConvert, req.body.customerFromAddress, req.body.customerToAddress)
+    .then((result) => {
+        res.status(200).send(result);
+    })
+    .fail((error) => {
+        res.status(400).send(error);
     });
 });
 

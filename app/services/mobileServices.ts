@@ -1,7 +1,7 @@
 // Copyright BASYX.lab
 import * as Q from 'q';
 import { ContractPaper } from './loyaltySchemeServices';
-import { queryCutomerMembership, queryCustomerMemberShipId, queryBusinessList, findVault, saveNewUser } from './firebaseServices';
+import { queryCutomerMembership, queryCustomerMemberShipId, queryBusinessList, findVault, saveNewUser, queryFxSchemes, findContractAddress } from './firebaseServices';
 
 // LIBRARY IMPORTS
 const Web3 = require('web3');
@@ -103,5 +103,74 @@ export function registerNewUser(business: string, fbId: string, pw?: string): Q.
                 resolve('0x' + addr[0]);
             });
         });
+    });
+}
+
+/* @ FX */
+
+export function listFxSchemes(business: string): Q.Promise<{}> {
+    return Q.Promise((resolve, reject, notify) => {
+        queryFxSchemes(business)
+        .then((result) => {
+            resolve({fxPartners: result});
+        })
+        .fail((error) => {
+            reject(error);
+        })
+    });
+}
+
+export function checkPointConversion(business: string, schemeName: string, amount: number): Q.Promise<{}> {
+    return Q.Promise((resolve, reject, notify) => {
+        findContractAddress(business, schemeName)
+        .then((contractAddress) => {
+            console.log('********** DEV : FX address is : ' + contractAddress);
+
+            const fxInstance = new ContractPaper('fx', 'FX', ['fx', 'vault']);
+            const contractInstance = fxInstance.contract.at(contractAddress);
+            const fxConversionDryrunEvent = contractInstance.ConversionDryrun();
+
+            fxConversionDryrunEvent.watch((error, result) => {
+                if (error) {
+                    console.log(error);
+                    reject({});
+                } else {
+                    fxConversionDryrunEvent.stopWatching();
+                    console.log('### FX Conversion Dryrun Event ###');
+                    console.log('Status : ' + result.args.status);
+                    console.log('Contract at : ' + contractAddress);
+                    console.log('From business : ' + result.args.fromBusiness);
+                    console.log('Owner : ' + result.args.owner);
+                    console.log('Partner : ' + result.args.partner);
+                    console.log('Amount to convert : ' + result.args.amountToConvert);
+                    console.log('Amount receivable : ' + result.args.amountReceivable);
+                    console.log();
+                    resolve({
+                        amountToConvert: result.args.amountToConvert,
+                        conversionRate: result.args.conversionRate,
+                        amountReceivable: result.args.amountReceivable
+                    });
+                }
+            });
+            if (business === 'BASYXLab') {
+                contractInstance.conversionDryrun(web3.eth.accounts[0], amount);
+            } else if (business === 'NeikidFyre') {
+                contractInstance.conversionDryrun(web3.eth.accounts[1], amount);
+            } else {
+                contractInstance.conversionDryrun(web3.eth.accounts[2], amount);
+            }
+            contractInstance.conversionDryrun(web3.eth.accounts[0], amount);
+
+            console.log('********** DEV : Finished checkPointConversion');
+        })
+        .fail((error) => {
+            reject(error);
+        })
+    });
+}
+
+export function makePointConversion(business: string, schemeName: string, amount: number, customerFromAddress: string, customerToAddress: string): Q.Promise<{}> {
+    return Q.Promise((resolve, reject, notify) => {
+
     });
 }

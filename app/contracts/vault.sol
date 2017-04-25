@@ -61,36 +61,37 @@ contract Vault {
     }
 
     // Decreases the balance of an account
-    function decreaseBalance(address account, uint256 value) returns (uint256 newBalance) {
+    function decreaseBalance(address account, uint256 value) returns (bool result) {
         uint256 old;
         if (value < 0) {
             DecreaseBalance('FAIL', msg.sender, account, old, value, balanceOf[account]);
-            throw;
+            return false;
         } else if (balanceOf[account] < value) {
             /*old = balanceOf[account];*/
             /*balanceOf[account] = 0;*/
             /*DecreaseBalance('SUCCES', msg.sender, account, old, value, balanceOf[account]);*/
             DecreaseBalance('FAIL', msg.sender, account, old, value, balanceOf[account]);
-            return balanceOf[account];
+            return false;
         } else {
             old = balanceOf[account];
             balanceOf[account] -= value;
             DecreaseBalance('SUCCES', msg.sender, account, old, value, balanceOf[account]);
-            return balanceOf[account];
+            return true;
         }
     }
 
     // Sets the balance of an account to a specific value
-    function manipulateBalance(address account, uint256 value) returns (uint256 newBalance) {
+    function manipulateBalance(address account, uint256 value) returns (bool result) {
         uint256 old;
         if (value < 0) {
             old = balanceOf[account];
             ManipulateBalance('FAIL',msg.sender, account, old, balanceOf[account]);
+            return false;
         } else {
             old = balanceOf[account];
             balanceOf[account] = value;
             ManipulateBalance('SUCCES',msg.sender, account, old, balanceOf[account]);
-            return balanceOf[account];
+            return true;
         }
     }
 
