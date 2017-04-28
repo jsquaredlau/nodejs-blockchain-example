@@ -14,6 +14,9 @@ const firebaseConfig = config.get('Firebase.config');
 //     storageBucket: "laas-1.appspot.com",
 //     messagingSenderId: "622638005740"
 // };
+
+// console.log(firebaseConfig);
+console.log(process.env.NODE_ENV);
 firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
 

@@ -138,24 +138,24 @@ module.exports = function(grunt) {
 
     ///// GRUNT COMMANDS /////
     // Default tasks.
-    grunt.registerTask('default', ['tslint:all', 'ts:build']);
+    grunt.registerTask('default', ['env:dev', 'tslint:all', 'ts:build']);
 
-    grunt.registerTask('build', ['tslint:all', 'ts:build', 'env:dev']);
+    grunt.registerTask('build', ['env:dev', 'tslint:all', 'ts:build']);
 
-    grunt.registerTask('build2', ['tslint:all', 'ts:build', 'env:dev2']);
+    grunt.registerTask('build2', ['env:dev2', 'tslint:all', 'ts:build']);
 
-    grunt.registerTask('build3', ['tslint:all', 'ts:build', 'env:dev3']);
+    grunt.registerTask('build3', ['env:dev3', 'tslint:all', 'ts:build']);
 
-    grunt.registerTask('production', ['tslint:all', 'ts:build', 'env:production']);
+    grunt.registerTask('production', ['env:production', 'tslint:all', 'ts:build']);
 
-    grunt.registerTask('production2', ['tslint:all', 'ts:build', 'env:production2']);
+    grunt.registerTask('production2', ['env:production2', 'tslint:all', 'ts:build']);
 
-    grunt.registerTask('production3', ['tslint:all', 'ts:build', 'env:production3']);
+    grunt.registerTask('production3', ['env:production3', 'tslint:all', 'ts:build']);
 
     // grunt-concurrent will administer the running of nodemon and grunt watch
-    grunt.registerTask('serve', ['tslint:all', 'ts:build', 'concurrent:watchers']);
+    grunt.registerTask('serve', ['env:dev', 'tslint:all', 'ts:build', 'concurrent:watchers']);
 
     // grunt.registerTask('serve', ['tslint:all', 'ts:build', 'concurrent:watchers', 'env:dev']);
 
-    grunt.registerTask('serve2', ['tslint:all', 'ts:build', 'concurrent:watchers', 'env:dev2']);
+    grunt.registerTask('serve2', ['env:dev2', 'tslint:all', 'ts:build', 'concurrent:watchers']);
 };
