@@ -53,6 +53,64 @@ module.exports = function(grunt) {
                     logConcurrentOutput: true
                 }
             }
+        },
+        env : {
+            options : {
+         	//Shared Options Hash
+            },
+            dev : {
+                NODE_ENV : 'development',
+                DEST     : 'build'
+            },
+            dev2 : {
+                NODE_ENV : 'development',
+                DEST     : 'build',
+                NODE_APP_INSTANCE : 2
+            },
+            dev3 : {
+                NODE_ENV : 'development',
+                DEST     : 'build',
+                NODE_APP_INSTANCE : 3
+            },
+            production : {
+              NODE_ENV : 'production',
+              DEST     : 'build',
+              concat   : {
+                PATH     : {
+                  'value': 'node_modules/.bin',
+                  'delimiter': ':'
+                }
+              }
+            },
+            production2 : {
+              NODE_ENV : 'production',
+              DEST     : 'build',
+              NODE_APP_INSTANCE : 2,
+              concat   : {
+                PATH     : {
+                  'value': 'node_modules/.bin',
+                  'delimiter': ':'
+                }
+              }
+            },
+            production3 : {
+              NODE_ENV : 'production',
+              DEST     : 'build',
+              NODE_APP_INSTANCE : 3,
+              concat   : {
+                PATH     : {
+                  'value': 'node_modules/.bin',
+                  'delimiter': ':'
+                }
+              }
+            },
+            functions: {
+              BY_FUNCTION: function() {
+                var value = '123';
+                grunt.log.writeln('setting BY_FUNCTION to ' + value);
+                return value;
+              }
+            }
         }
     });
 
@@ -75,13 +133,29 @@ module.exports = function(grunt) {
     // Nodemon and grunt watch will block each other by themselves, this will handle that
     grunt.loadNpmTasks('grunt-concurrent');
 
+    // Setting of ENV variables
+    grunt.loadNpmTasks('grunt-env');
 
     ///// GRUNT COMMANDS /////
     // Default tasks.
     grunt.registerTask('default', ['tslint:all', 'ts:build']);
 
-    grunt.registerTask('build', ['tslint:all', 'ts:build', 'concurrent:watchers']);
+    grunt.registerTask('build', ['tslint:all', 'ts:build', 'env:dev']);
+
+    grunt.registerTask('build2', ['tslint:all', 'ts:build', 'env:dev2']);
+
+    grunt.registerTask('build3', ['tslint:all', 'ts:build', 'env:dev3']);
+
+    grunt.registerTask('production', ['tslint:all', 'ts:build', 'env:production']);
+
+    grunt.registerTask('production2', ['tslint:all', 'ts:build', 'env:production2']);
+
+    grunt.registerTask('production3', ['tslint:all', 'ts:build', 'env:production3']);
 
     // grunt-concurrent will administer the running of nodemon and grunt watch
-    grunt.registerTask('serve', ['concurrent:watchers']);
+    grunt.registerTask('serve', ['tslint:all', 'ts:build', 'concurrent:watchers']);
+
+    // grunt.registerTask('serve', ['tslint:all', 'ts:build', 'concurrent:watchers', 'env:dev']);
+
+    grunt.registerTask('serve2', ['tslint:all', 'ts:build', 'concurrent:watchers', 'env:dev2']);
 };

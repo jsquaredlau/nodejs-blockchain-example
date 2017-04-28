@@ -4,14 +4,17 @@ import * as Q from 'q';
 
 import { ContractParameters, BusinessDetails } from '../models';
 
-const config = {
-    apiKey: "AIzaSyBQNNPknNbL21FqtJLDbZpd9DvC3Nqudnk",
-    authDomain: "laas-1.firebaseapp.com",
-    databaseURL: "https://laas-1.firebaseio.com",
-    storageBucket: "laas-1.appspot.com",
-    messagingSenderId: "622638005740"
-};
-firebase.initializeApp(config);
+const config = require('config');
+const firebaseConfig = config.get('Firebase.config');
+//
+// const config = {
+//     apiKey: "AIzaSyBQNNPknNbL21FqtJLDbZpd9DvC3Nqudnk",
+//     authDomain: "laas-1.firebaseapp.com",
+//     databaseURL: "https://laas-1.firebaseio.com",
+//     storageBucket: "laas-1.appspot.com",
+//     messagingSenderId: "622638005740"
+// };
+firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
 
 /* @ USERS */

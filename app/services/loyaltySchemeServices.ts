@@ -8,12 +8,15 @@ const Web3 = require('web3');
 const solc = require('solc');
 const read = require('read-file');
 const path = require('path');
+const config = require('config');
 const request = require('request');
 const objectValues = require('object-values');
 
 // LIBRARY SETUP
+const ethConfig = config.get('Ethereum.nodeConfig');
 const web3 = new Web3();
-web3.setProvider(new web3.providers.HttpProvider('http://localhost:8545'));
+// web3.setProvider(new web3.providers.HttpProvider('http://localhost:8545'));
+web3.setProvider(new web3.providers.HttpProvider('http://' + ethConfig.host + ':' + ethConfig.port));
 
 export function deployContract(business: string, contractType: string, schemeName: string, details): Q.Promise<{}> {
     return Q.Promise((resolve, reject, notify) => {

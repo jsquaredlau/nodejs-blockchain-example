@@ -8,15 +8,18 @@ import { listDeployedContracts, updateDeployedContract, saveBusinessDetails, dea
 import { ContractParameters, CollaborationRequestInfo } from '../models';
 
 // LIBRARY IMPORTS
-const Web3 = require('web3');
-const solc = require('solc');
-const read = require('read-file');
-const path = require('path')
+// const Web3 = require('web3');
+// const solc = require('solc');
+// const read = require('read-file');
+// const path = require('path')
+// const config = require('config');
+// const ethConfig = config.get('Ethereum.nodeConfig');
 
 // LIBRARY SETUP
-const web3 = new Web3();
-web3.setProvider(new web3.providers.HttpProvider('http://localhost:8545'));
-web3.eth.defaultAccount = web3.eth.coinbase;
+// const web3 = new Web3();
+// // web3.setProvider(new web3.providers.HttpProvider('http://localhost:8545'));
+// web3.setProvider(new web3.providers.HttpProvider('http://' + ethConfig.get('host') + ':' + ethConfig.get('port')));
+// web3.eth.defaultAccount = web3.eth.coinbase;
 const router: Router = Router();
 
 /* TEMPLATE */
@@ -34,6 +37,7 @@ router.get('/', (req: Request, res: Response) => {
 router.post('/:business/:contractType/:schemeName/deploy', (req: Request, res: Response) => {
     const { business, contractType, schemeName } = req.params;
     const contractParameters = req.body;
+    console.log(req.body);
     contractParameters['owner'] = business;
     deployContract(business, contractType, schemeName, contractParameters)
         .then((result) => {

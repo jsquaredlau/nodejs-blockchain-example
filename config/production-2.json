@@ -1,0 +1,18 @@
+{
+    "Ethereum": {
+        "nodeConfig": {
+            "host": "jsquared.ml",
+            "port": 8545
+        }
+    },
+    "Firebase": {
+        "config": {
+            "apiKey": "AIzaSyCT2IjzfBFzq_KRcy1-XtAUjKECVeZdqEY",
+            "authDomain": "laas-2.firebaseapp.com",
+            "databaseURL": "https://laas-2.firebaseio.com",
+            "projectId": "laas-2",
+            "storageBucket": "laas-2.appspot.com",
+            "messagingSenderId": "7320845905"
+        }
+    }
+}
