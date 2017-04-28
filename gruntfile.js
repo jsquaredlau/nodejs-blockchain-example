@@ -155,7 +155,5 @@ module.exports = function(grunt) {
     // grunt-concurrent will administer the running of nodemon and grunt watch
     grunt.registerTask('serve', ['env:dev', 'tslint:all', 'ts:build', 'concurrent:watchers']);
 
-    // grunt.registerTask('serve', ['tslint:all', 'ts:build', 'concurrent:watchers', 'env:dev']);
-
     grunt.registerTask('serve2', ['env:dev2', 'tslint:all', 'ts:build', 'concurrent:watchers']);
 };

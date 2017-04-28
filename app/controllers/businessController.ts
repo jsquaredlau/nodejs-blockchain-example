@@ -7,19 +7,6 @@ import { deployContract, runContract } from '../services';
 import { listDeployedContracts, updateDeployedContract, saveBusinessDetails, deactivateDeployedContract, parseCollaborationRequest, parseCollaborationAcceptance, parseCollaborationRejection } from '../services';
 import { ContractParameters, CollaborationRequestInfo } from '../models';
 
-// LIBRARY IMPORTS
-// const Web3 = require('web3');
-// const solc = require('solc');
-// const read = require('read-file');
-// const path = require('path')
-// const config = require('config');
-// const ethConfig = config.get('Ethereum.nodeConfig');
-
-// LIBRARY SETUP
-// const web3 = new Web3();
-// // web3.setProvider(new web3.providers.HttpProvider('http://localhost:8545'));
-// web3.setProvider(new web3.providers.HttpProvider('http://' + ethConfig.get('host') + ':' + ethConfig.get('port')));
-// web3.eth.defaultAccount = web3.eth.coinbase;
 const router: Router = Router();
 
 /* TEMPLATE */
