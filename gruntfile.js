@@ -140,24 +140,24 @@ module.exports = function(grunt) {
     // Default tasks.
     grunt.registerTask('default', ['env:dev', 'tslint:all', 'ts:build']);
 
-    grunt.registerTask('build', ['env:dev', 'tslint:all', 'ts:build']);
+    grunt.registerTask('build-dev', ['env:dev', 'tslint:all', 'ts:build']);
 
-    grunt.registerTask('build2', ['env:dev2', 'tslint:all', 'ts:build']);
+    grunt.registerTask('build-dev-2', ['env:dev2', 'tslint:all', 'ts:build']);
 
-    grunt.registerTask('build3', ['env:dev3', 'tslint:all', 'ts:build']);
+    grunt.registerTask('build-dev-3', ['env:dev3', 'tslint:all', 'ts:build']);
 
-    grunt.registerTask('production', ['env:production', 'tslint:all', 'ts:build']);
+    grunt.registerTask('build-prod', ['env:production', 'tslint:all', 'ts:build']);
 
-    grunt.registerTask('production2', ['env:production2', 'tslint:all', 'ts:build']);
+    grunt.registerTask('build-prod-2', ['env:production2', 'tslint:all', 'ts:build']);
 
-    grunt.registerTask('production3', ['env:production3', 'tslint:all', 'ts:build']);
+    grunt.registerTask('build-prod-3', ['env:production3', 'tslint:all', 'ts:build']);
 
     // grunt-concurrent will administer the running of nodemon and grunt watch
-    grunt.registerTask('serve', ['env:dev', 'tslint:all', 'ts:build', 'concurrent:watchers']);
+    grunt.registerTask('serve-dev', ['env:dev', 'tslint:all', 'ts:build', 'concurrent:watchers']);
 
-    grunt.registerTask('serve2', ['env:dev2', 'tslint:all', 'ts:build', 'concurrent:watchers']);
+    grunt.registerTask('serve-dev-2', ['env:dev2', 'tslint:all', 'ts:build', 'concurrent:watchers']);
 
-    grunt.registerTask('serve-production', ['env:production', 'tslint:all', 'ts:build', 'concurrent:watchers']);
+    grunt.registerTask('serve-prod', ['env:production', 'tslint:all', 'ts:build', 'concurrent:watchers']);
 
-    grunt.registerTask('serve-production2', ['env:production2', 'tslint:all', 'ts:build', 'concurrent:watchers']);
+    grunt.registerTask('serve-prod-2', ['env:production2', 'tslint:all', 'ts:build', 'concurrent:watchers']);
 };
