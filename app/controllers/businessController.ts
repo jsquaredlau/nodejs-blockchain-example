@@ -19,14 +19,19 @@ const router: Router = Router();
 // });
 
 // ENABLE CORS
-router.all('*', cors());
+// router.all('*', cors());
+
+router.options('*', function (req, res) {
+  console.log('Got CORS OPTIONS request for', req.originalUrl);
+  res.send();
+});
 
 //ROUTES
 router.get('/', (req: Request, res: Response) => {
     res.send('Welcome to the User Controller!');
 });
 
-router.post('/:business/:contractType/:schemeName/deploy', cors(), (req: Request, res: Response) => {
+router.post('/:business/:contractType/:schemeName/deploy', (req: Request, res: Response) => {
     const { business, contractType, schemeName } = req.params;
     const contractParameters = req.body;
     console.log(req.body);
