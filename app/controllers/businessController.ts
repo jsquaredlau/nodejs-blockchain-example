@@ -26,7 +26,7 @@ router.get('/', (req: Request, res: Response) => {
     res.send('Welcome to the User Controller!');
 });
 
-router.post('/:business/:contractType/:schemeName/deploy', (req: Request, res: Response) => {
+router.post('/:business/:contractType/:schemeName/deploy', cors(), (req: Request, res: Response) => {
     const { business, contractType, schemeName } = req.params;
     const contractParameters = req.body;
     console.log(req.body);
