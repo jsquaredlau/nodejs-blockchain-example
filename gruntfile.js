@@ -156,4 +156,8 @@ module.exports = function(grunt) {
     grunt.registerTask('serve', ['env:dev', 'tslint:all', 'ts:build', 'concurrent:watchers']);
 
     grunt.registerTask('serve2', ['env:dev2', 'tslint:all', 'ts:build', 'concurrent:watchers']);
+
+    grunt.registerTask('serve-production', ['env:production', 'tslint:all', 'ts:build', 'concurrent:watchers']);
+
+    grunt.registerTask('serve-production2', ['env:production2', 'tslint:all', 'ts:build', 'concurrent:watchers']);
 };

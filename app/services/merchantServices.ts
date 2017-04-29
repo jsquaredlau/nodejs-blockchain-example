@@ -10,6 +10,7 @@ const config = require('config');
 const ethConfig = config.get('Ethereum.nodeConfig');
 
 // LIBRARY SETUP
+console.log(config);
 const web3 = new Web3();
 web3.setProvider(new web3.providers.HttpProvider('http://' + ethConfig.get('host') + ':' + ethConfig.get('port')));
 web3.eth.defaultAccount = web3.eth.coinbase;
