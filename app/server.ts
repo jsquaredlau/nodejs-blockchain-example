@@ -19,17 +19,15 @@ app.use(cors());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-app.options('*', cors())
-
 // app.use('/', WelcomeController);
 
 app.use('/api/v1/user', UserController);
 
-app.use('/api/v1/business', cors(), BusinessController);
+app.use('/api/v1/business', BusinessController);
 
-app.use('/api/v1/merchant', cors(), MerchantController);
+app.use('/api/v1/merchant', MerchantController);
 
-app.use('/api/v1/mobile', cors(), MobileController);
+app.use('/api/v1/mobile', MobileController);
 
 // app.user('/api/v1/laas', LaasController);
 

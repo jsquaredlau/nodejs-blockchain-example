@@ -7,6 +7,8 @@ import { deployContract, runContract } from '../services';
 import { listDeployedContracts, updateDeployedContract, saveBusinessDetails, deactivateDeployedContract, parseCollaborationRequest, parseCollaborationAcceptance, parseCollaborationRejection } from '../services';
 import { ContractParameters, CollaborationRequestInfo } from '../models';
 
+const cors = require('cors');
+
 const router: Router = Router();
 
 /* TEMPLATE */
@@ -15,6 +17,9 @@ const router: Router = Router();
 //
 //     res.send('<SOMETHING>');
 // });
+
+// ENABLE CORS
+router.all('*', cors());
 
 //ROUTES
 router.get('/', (req: Request, res: Response) => {
