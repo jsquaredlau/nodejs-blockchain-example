@@ -9,11 +9,14 @@ import { UserController, BusinessController, MerchantController, MobileControlle
 
 const bodyParser = require('body-parser');
 const cors = require('cors');
+const config = require('config');
+const portConfig = config.get('Port');
 
 // Create a new express application instance
 const app: express.Application = express();
 // The port the express app will listen on
-const port: number = process.env.PORT || 8080;
+// const port: number = process.env.PORT || 8080;
+const port: number = portConfig || 8080;
 
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: false }));
