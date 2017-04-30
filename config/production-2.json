@@ -15,5 +15,8 @@
             "storageBucket": "laas-2.appspot.com",
             "messagingSenderId": "7320845905"
         }
+    },
+    "Partner": {
+        "apiUrl": "http://jsquared.ga:3000/"
     }
 }

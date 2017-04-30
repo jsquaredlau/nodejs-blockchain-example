@@ -14,5 +14,8 @@
             "storageBucket": "laas-1.appspot.com",
             "messagingSenderId": "622638005740"
         }
+    },
+    "Partner": {
+        "apiUrl": "http://localhost:3001/"
     }
 }

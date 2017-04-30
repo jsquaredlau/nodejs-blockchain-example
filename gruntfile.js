@@ -67,11 +67,6 @@ module.exports = function(grunt) {
                 DEST     : 'build',
                 NODE_APP_INSTANCE : 2
             },
-            dev3 : {
-                NODE_ENV : 'development',
-                DEST     : 'build',
-                NODE_APP_INSTANCE : 3
-            },
             production : {
               NODE_ENV : 'production',
               DEST     : 'build',
@@ -86,17 +81,6 @@ module.exports = function(grunt) {
               NODE_ENV : 'production',
               DEST     : 'build',
               NODE_APP_INSTANCE : 2,
-              concat   : {
-                PATH     : {
-                  'value': 'node_modules/.bin',
-                  'delimiter': ':'
-                }
-              }
-            },
-            production3 : {
-              NODE_ENV : 'production',
-              DEST     : 'build',
-              NODE_APP_INSTANCE : 3,
               concat   : {
                 PATH     : {
                   'value': 'node_modules/.bin',
@@ -144,13 +128,9 @@ module.exports = function(grunt) {
 
     grunt.registerTask('build-dev-2', ['env:dev2', 'tslint:all', 'ts:build']);
 
-    grunt.registerTask('build-dev-3', ['env:dev3', 'tslint:all', 'ts:build']);
-
     grunt.registerTask('build-prod', ['env:production', 'tslint:all', 'ts:build']);
 
     grunt.registerTask('build-prod-2', ['env:production2', 'tslint:all', 'ts:build']);
-
-    grunt.registerTask('build-prod-3', ['env:production3', 'tslint:all', 'ts:build']);
 
     // grunt-concurrent will administer the running of nodemon and grunt watch
     grunt.registerTask('serve-dev', ['env:dev', 'tslint:all', 'ts:build', 'concurrent:watchers']);
