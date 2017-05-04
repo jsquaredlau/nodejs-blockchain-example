@@ -90,7 +90,7 @@ contract Vault {
         } else {
             old = balanceOf[account];
             balanceOf[account] = value;
-            ManipulateBalance('SUCCES',msg.sender, account, old, balanceOf[account]);
+            ManipulateBalance('SUCCESS',msg.sender, account, old, balanceOf[account]);
             return true;
         }
     }
