@@ -18,37 +18,37 @@ web3.eth.defaultAccount = web3.eth.coinbase;
 export function distributePoints(business: string, fbId: string, customerAddress: string, points: number): Q.Promise<{}> {
     return Q.Promise((resolve, reject, notify) => {
         searchDistributableSchemes(business)
-        .then((contracts) => {
-            for (const contract in contracts) {
-                sendTxToContract(business, customerAddress, points, contracts[contract], fbId);
-            }
-            resolve({status: 200});
-        })
-        .fail((error) => {
-            reject(error);
-        })
+            .then((contracts) => {
+                for (const contract in contracts) {
+                    sendTxToContract(business, customerAddress, points, contracts[contract], fbId);
+                }
+                resolve({ status: 200 });
+            })
+            .fail((error) => {
+                reject(error);
+            })
     });
 }
 
 export function redeemPoints(business: string, fbId: string, customerAddress: string, points: number): Q.Promise<{}> {
     return Q.Promise((resolve, reject, notify) => {
         findVault(business)
-        .then((contractAddress) => {
-            processRedemption(contractAddress, customerAddress, points)
-            .then((result) => {
-                resolve(result);
+            .then((contractAddress) => {
+                processRedemption(contractAddress, customerAddress, points)
+                    .then((result) => {
+                        resolve(result);
+                    })
+                    .fail((error) => {
+                        reject(error);
+                    });
             })
             .fail((error) => {
                 reject(error);
             });
-        })
-        .fail((error) => {
-            reject(error);
-        });
     });
 }
 
-function sendTxToContract(business: string, customerAddress: string, points: number, scheme: any, fbId?: string): any{
+function sendTxToContract(business: string, customerAddress: string, points: number, scheme: any, fbId?: string): any {
     let paper;
     if (scheme.type === 'vault') {
         paper = new ContractPaper('vault', 'Vault');
@@ -118,7 +118,7 @@ function processRedemption(contractAddress: string, customerAddress: string, poi
                 if (result.status === 'SUCESS') {
                     resolve({});
                 } else {
-                    reject({error: 'Insufficient balance'});
+                    reject({ error: 'Insufficient balance' });
                 }
             }
         });
