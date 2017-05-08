@@ -14,9 +14,9 @@ const database = firebase.database();
 export function searchUser(business: string, fbId: string): Q.Promise<any> {
     return Q.Promise((resolve, reject, notify) => {
         database.ref('customers/' + business + '/' + fbId).once('value')
-        .then((snapshot) => {
-            resolve(snapshot.val());
-        });
+            .then((snapshot) => {
+                resolve(snapshot.val());
+            });
     });
 }
 
@@ -25,35 +25,35 @@ export function searchDistributableSchemes(business: string): Q.Promise<any> {
     return Q.Promise((resolve, reject, notify) => {
         const applicableContracts = [];
         firebase.database().ref('schemes/' + business)
-        .once('value')
-        .then((snapshot) => {
-            for (const scheme in snapshot.val()) {
-                if (snapshot.val()[scheme].contractType === 'vault' || snapshot.val()[scheme].contractType === 'rewardMile') {
-                    applicableContracts.push({address: snapshot.val()[scheme].contractAddress, type: snapshot.val()[scheme].contractType})
+            .once('value')
+            .then((snapshot) => {
+                for (const scheme in snapshot.val()) {
+                    if (snapshot.val()[scheme].contractType === 'vault' || snapshot.val()[scheme].contractType === 'rewardMile') {
+                        applicableContracts.push({ address: snapshot.val()[scheme].contractAddress, type: snapshot.val()[scheme].contractType })
+                    }
                 }
-            }
-            resolve(applicableContracts);
-        });
+                resolve(applicableContracts);
+            });
     })
 }
 
 export function findVault(business: string): Q.Promise<any> {
     return Q.Promise((resolve, reject, notify) => {
         database.ref('schemes/' + business).once('value')
-        .then((snapshot) => {
-            let vaultAddress: string = null;
-            for (const scheme in snapshot.val()) {
-                if (snapshot.val()[scheme].contractType === 'vault') {
-                    vaultAddress = snapshot.val()[scheme].contractAddress;
-                    break;
+            .then((snapshot) => {
+                let vaultAddress: string = null;
+                for (const scheme in snapshot.val()) {
+                    if (snapshot.val()[scheme].contractType === 'vault') {
+                        vaultAddress = snapshot.val()[scheme].contractAddress;
+                        break;
+                    }
                 }
-            }
-            if (vaultAddress !== null) {
-                resolve(vaultAddress);
-            } else {
-                reject({error: 'No vault contract'});
-            }
-        })
+                if (vaultAddress !== null) {
+                    resolve(vaultAddress);
+                } else {
+                    reject({ error: 'No vault contract' });
+                }
+            })
     });
 }
 
@@ -61,41 +61,41 @@ export function findVault(business: string): Q.Promise<any> {
 export function queryCutomerMembership(fbId: string): Q.Promise<{}> {
     return Q.Promise((resolve, reject, notify) => {
         database.ref('/memberships/' + fbId).once('value')
-        .then((snapshot) => {
-            resolve(snapshot.val());
-        }, (error) => {
-            reject({error: 'Customer does not exist'});
-        });
+            .then((snapshot) => {
+                resolve(snapshot.val());
+            }, (error) => {
+                reject({ error: 'Customer does not exist' });
+            });
     });
 }
 
 export function queryCustomerMemberShipId(business: string, fbId: string): Q.Promise<{}> {
     return Q.Promise((resolve, reject, notify) => {
         database.ref('/memberships/' + fbId + '/' + business).once('value')
-        .then((snapshot) => {
-            if (snapshot.val() !== null){
-                resolve(snapshot.val());
-            } else {
-                reject({error: 'No such customer membership'});
-            }
-        }, (error) => {
-            reject({error: 'No such customer'});
-        });
+            .then((snapshot) => {
+                if (snapshot.val() !== null) {
+                    resolve(snapshot.val());
+                } else {
+                    reject({ error: 'No such customer membership' });
+                }
+            }, (error) => {
+                reject({ error: 'No such customer' });
+            });
     });
 }
 
 export function queryBusinessList(): Q.Promise<{}> {
     return Q.Promise((resolve, reject, notify) => {
         database.ref('/businesses').once('value')
-        .then((snapshot) => {
-            const listOfBusinesses = [];
-            for (const business in snapshot.val()) {
-                listOfBusinesses.push(business);
-            }
-            resolve(listOfBusinesses);
-        }, (error) => {
-            reject(error);
-        });
+            .then((snapshot) => {
+                const listOfBusinesses = [];
+                for (const business in snapshot.val()) {
+                    listOfBusinesses.push(business);
+                }
+                resolve(listOfBusinesses);
+            }, (error) => {
+                reject(error);
+            });
     });
 }
 
@@ -103,6 +103,19 @@ export function saveNewUser(business: string, fbId: string, address: string): vo
     database.ref('users/' + address).set(fbId);
     database.ref('customers/' + business + '/' + fbId).set(address);
     database.ref('memberships/' + fbId + '/' + business).set(address);
+}
+
+export function isBusiness(business: string): any {
+    database.ref('/businesses/' + business).once('value')
+        .then((snapshot) => {
+            if (snapshot.val() === null) {
+                return { business: false };
+            } else {
+                return { business: true };
+            }
+        }, (error) => {
+            return { business: false };
+        });
 }
 
 /* @ CONTRACTS */
@@ -266,7 +279,7 @@ export function findContractAddress(business: string, schemeName: string, collab
                     if (snapshot.val() !== null) {
                         resolve(snapshot.val());
                     } else {
-                        reject({error: 'No such contract'});
+                        reject({ error: 'No such contract' });
                     }
                 }, (errror) => {
                     reject(new Error('Query for ' + schemeName + ' contract address failed.'));
@@ -277,7 +290,7 @@ export function findContractAddress(business: string, schemeName: string, collab
                     if (snapshot.val() !== null) {
                         resolve(snapshot.val());
                     } else {
-                        reject({error: 'No such contract'});
+                        reject({ error: 'No such contract' });
                     }
                 }, (error) => {
                     reject(new Error('Query for ' + schemeName + ' contract address failed.'));
@@ -328,7 +341,7 @@ export function saveBusinessDetails(business: string, details: BusinessDetails):
 
 export function queueCollaborationRequest(business: string, collabInfo): boolean {
     collabInfo['requestDate'] = new Date().getTime(),
-    database.ref('schemes/' + business + '/collaborationRequests/' + collabInfo.schemeName).set(collabInfo);
+        database.ref('schemes/' + business + '/collaborationRequests/' + collabInfo.schemeName).set(collabInfo);
     database.ref('businesses/' + business + '/' + 'collaborationRequests').child(collabInfo.schemeName).set(true);
     return true;
 }
@@ -339,25 +352,25 @@ export function queryFxSchemes(business: string): Q.Promise<{}> {
     return Q.Promise((resolve, reject, notify) => {
         const fxPartners = []
         database.ref('/schemes/' + business).once('value')
-        .then((snapshot) => {
-            for (const scheme in snapshot.val()) {
-                if (snapshot.val()[scheme].contractType === 'fx') {
-                    if (business === snapshot.val()[scheme].owner) {
-                        fxPartners.push({
-                            schemeName: scheme,
-                            partner: snapshot.val()[scheme].requestedPartner
-                        })
-                    } else {
-                        fxPartners.push({
-                            schemeName: scheme,
-                            partner: snapshot.val()[scheme].owner
-                        })
+            .then((snapshot) => {
+                for (const scheme in snapshot.val()) {
+                    if (snapshot.val()[scheme].contractType === 'fx') {
+                        if (business === snapshot.val()[scheme].owner) {
+                            fxPartners.push({
+                                schemeName: scheme,
+                                partner: snapshot.val()[scheme].requestedPartner
+                            })
+                        } else {
+                            fxPartners.push({
+                                schemeName: scheme,
+                                partner: snapshot.val()[scheme].owner
+                            })
+                        }
                     }
                 }
-            }
-            resolve(fxPartners);
-        }, (error) => {
-            reject(error);
-        })
+                resolve(fxPartners);
+            }, (error) => {
+                reject(error);
+            })
     });
 }
