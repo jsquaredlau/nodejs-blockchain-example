@@ -62,7 +62,11 @@ export function queryCutomerMembership(fbId: string): Q.Promise<{}> {
     return Q.Promise((resolve, reject, notify) => {
         database.ref('/memberships/' + fbId).once('value')
             .then((snapshot) => {
-                resolve(snapshot.val());
+                if (snapshot.val() === null) {
+                    resolve({})
+                } else {
+                    resolve(snapshot.val());
+                }
             }, (error) => {
                 reject({ error: 'Customer does not exist' });
             });
