@@ -344,37 +344,50 @@ export function saveBusinessDetails(business: string, details: BusinessDetails):
 }
 
 export function queueCollaborationRequest(business: string, collabInfo): boolean {
-    collabInfo['requestDate'] = new Date().getTime(),
-        database.ref('schemes/' + business + '/collaborationRequests/' + collabInfo.schemeName).set(collabInfo);
+    collabInfo['requestDate'] = new Date().getTime();
+    database.ref('schemes/' + business + '/collaborationRequests/' + collabInfo.schemeName).set(collabInfo);
     database.ref('businesses/' + business + '/' + 'collaborationRequests').child(collabInfo.schemeName).set(true);
     return true;
 }
 
 /* @ FX */
 
-export function queryFxSchemes(business: string): Q.Promise<{}> {
+export function queryFxSchemes(business: string, fbId: string): Q.Promise<{}> {
     return Q.Promise((resolve, reject, notify) => {
-        const fxPartners = []
-        database.ref('/schemes/' + business).once('value')
-            .then((snapshot) => {
-                for (const scheme in snapshot.val()) {
-                    if (snapshot.val()[scheme].contractType === 'fx') {
-                        if (business === snapshot.val()[scheme].owner) {
-                            fxPartners.push({
-                                schemeName: scheme,
-                                partner: snapshot.val()[scheme].requestedPartner
-                            })
-                        } else {
-                            fxPartners.push({
-                                schemeName: scheme,
-                                partner: snapshot.val()[scheme].owner
-                            })
-                        }
-                    }
+        const fxPartners = [];
+        const memberships = [];
+        database.ref('/memberships/' + fbId).once('value')
+            .then((membershipSnapshot) => {
+                for (const membership in membershipSnapshot.val()) {
+                    memberships.push(membership);
                 }
-                resolve(fxPartners);
+                database.ref('/schemes/' + business).once('value')
+                    .then((fxSnapshot) => {
+                        for (const scheme in fxSnapshot.val()) {
+                            if (fxSnapshot.val()[scheme].contractType === 'fx') {
+                                if (business === fxSnapshot.val()[scheme].owner) {
+                                    if (fxSnapshot.val()[scheme].status !== 'pending' && memberships.indexOf(fxSnapshot.val()[scheme].requestedPartner) > -1) {
+                                        fxPartners.push({
+                                            schemeName: scheme,
+                                            partner: fxSnapshot.val()[scheme].requestedPartner
+                                        });
+                                    }
+                                } else {
+                                    if (fxSnapshot.val()[scheme].status !== 'pending' && memberships.indexOf(fxSnapshot.val()[scheme].owner) > -1) {
+                                        fxPartners.push({
+                                            schemeName: scheme,
+                                            partner: fxSnapshot.val()[scheme].owner
+                                        });
+                                    }
+                                }
+                            }
+                        }
+                        resolve(fxPartners);
+                    }, (error) => {
+                        reject(error);
+                    })
             }, (error) => {
                 reject(error);
-            })
+            });
     });
 }

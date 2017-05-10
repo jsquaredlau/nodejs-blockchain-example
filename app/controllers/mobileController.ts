@@ -87,10 +87,10 @@ router.post('/user/membership/list', (req: Request, res: Response) => {
 
 /* @ FX */
 
-router.get('/:business/fx/list', (req: Request, res: Response) => {
+router.post('/:business/fx/list', (req: Request, res: Response) => {
     const { business } = req.params;
 
-    listFxSchemes(business)
+    listFxSchemes(business, req.body.fbId)
         .then((result) => {
             res.status(200).send(result);
         })
