@@ -168,8 +168,8 @@ function saveFxContract(schemeName: string, contractAddress: number, details): v
         description: details.description,
         instructions: details.instructions,
         requiredInputs: details.requiredInputs,
-        toPartnerX: details.toPartnerFx,
-        toOwnerX: details.toOwnerFx,
+        toPartnerFx: details.toPartnerFx,
+        toOwnerFx: details.toOwnerFx,
         creationDate: new Date().getTime(),
         status: 'pending',
         vaultAddress: contractAddress
@@ -369,14 +369,20 @@ export function queryFxSchemes(business: string, fbId: string): Q.Promise<{}> {
                                     if (fxSnapshot.val()[scheme].status !== 'pending' && memberships.indexOf(fxSnapshot.val()[scheme].requestedPartner) > -1) {
                                         fxPartners.push({
                                             schemeName: scheme,
-                                            partner: fxSnapshot.val()[scheme].requestedPartner
+                                            owner: fxSnapshot.val()[scheme].owner,
+                                            partner: fxSnapshot.val()[scheme].requestedPartner,
+                                            toOwnerFx: fxSnapshot.val()[scheme].toOwnerFx,
+                                            toPartnerFx: fxSnapshot.val()[scheme].toPartnerFx
                                         });
                                     }
                                 } else {
                                     if (fxSnapshot.val()[scheme].status !== 'pending' && memberships.indexOf(fxSnapshot.val()[scheme].owner) > -1) {
                                         fxPartners.push({
                                             schemeName: scheme,
-                                            partner: fxSnapshot.val()[scheme].owner
+                                            owner: fxSnapshot.val()[scheme].owner,
+                                            partner: fxSnapshot.val()[scheme].owner,
+                                            toOwnerFx: fxSnapshot.val()[scheme].toOwnerFx,
+                                            toPartneFx: fxSnapshot.val()[scheme].toPartnerFx
                                         });
                                     }
                                 }
