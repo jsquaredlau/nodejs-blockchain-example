@@ -382,7 +382,7 @@ export function queryFxSchemes(business: string, fbId: string): Q.Promise<{}> {
                                             owner: fxSnapshot.val()[scheme].owner,
                                             partner: fxSnapshot.val()[scheme].owner,
                                             toOwnerFx: fxSnapshot.val()[scheme].toOwnerFx,
-                                            toPartneFx: fxSnapshot.val()[scheme].toPartnerFx
+                                            toPartnerFx: fxSnapshot.val()[scheme].toPartnerFx
                                         });
                                     }
                                 }
