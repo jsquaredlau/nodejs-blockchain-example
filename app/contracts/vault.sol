@@ -15,29 +15,23 @@ contract Vault {
     event DecreaseBalance(string status, address indexed from, address indexed to, uint256 oldBalance, uint256 amount, uint256 newBalance);
     event ManipulateBalance(string status, address indexed from, address indexed to, uint256 oldBalance, uint256 newBalance);
     event BalanceCheck(string status, address indexed from, address indexed customer, uint256 balance);
+    event ContractTerminated(string status);
 
     /* CONSTRUCTOR */
     function Valut(string _vaultName, string _tokenName) {
         owner = msg.sender;
         vaultName = _vaultName;
         tokenName = _tokenName;
-        /*contractKey = _contractKey;*/
-
-        // TODO: put in a safeguard
-        /*if (_addresses.length == _accountCount && _balances.length == _accountCount) {
-            for (uint8 i = 0; i < _accountCount; i++) {
-                balanceOf[_addresses[i]] = _balances[i];
-            }
-        }*/
     }
 
     /* FUNCTIONS */
 
     // Destroys contract and data
-    function die() {
-        if (msg.sender == owner) {
-            selfdestruct(owner);
-        }
+    function die(address _owner) {
+        /*if (owner == _owner) {*/
+        ContractTerminated('SUCCESS');
+        selfdestruct(_owner);
+        /*}*/
     }
 
     // Destroys accounts by setting balance to 0

@@ -4,7 +4,7 @@
 // MODULE IMPORTS
 import { Router, Request, Response } from 'express';
 import { deployContract, runContract } from '../services';
-import { listDeployedContracts, updateDeployedContract, saveBusinessDetails, deactivateDeployedContract, parseCollaborationRequest, parseCollaborationAcceptance, parseCollaborationRejection } from '../services';
+import { listDeployedContracts, updateDeployedContract, saveBusinessDetails, parseContractDeactivation, parseCollaborationRequest, parseCollaborationAcceptance, parseCollaborationRejection } from '../services';
 import { ContractParameters, CollaborationRequestInfo } from '../models';
 
 const cors = require('cors');
@@ -21,9 +21,9 @@ const router: Router = Router();
 // ENABLE CORS
 // router.all('*', cors());
 
-router.options('*', function (req, res) {
-  console.log('Got CORS OPTIONS request for', req.originalUrl);
-  res.send();
+router.options('*', function(req, res) {
+    console.log('Got CORS OPTIONS request for', req.originalUrl);
+    res.send();
 });
 
 //ROUTES
@@ -119,30 +119,24 @@ router.post('/:business/:schemeName/update', (req: Request, res: Response) => {
     }
 });
 
-router.post('/:business/:schemeName/deactivate', (req: Request, res: Response) => {
-    const { business, schemeName } = req.params;
-    deactivateDeployedContract(business, schemeName)
-        .then((result) => {
-            res.sendStatus(200);
-        })
-        .fail((error) => {
-            res.status(500).json(error);
-        })
-    res.send();
+router.post('/:business/scheme/deactivate', (req: Request, res: Response) => {
+    const { business } = req.params;
+    console.log('HERE : ' + req.body.schemeName);
+    if (req.body.schemeName === null) {
+        res.status(400).json({ error: 'No scheme specified' });
+    } else {
+        parseContractDeactivation(business, req.body.schemeName)
+            .then((result) => {
+                res.sendStatus(200).json({});
+            })
+            .fail((error) => {
+                res.status(500).json(error);
+            })
+        res.send();
+    }
 });
 
 router.post('/:business/details', (req: Request, res: Response) => {
-    const { business } = req.params;
-    saveBusinessDetails(business, req.body)
-        .then((result) => {
-            res.sendStatus(200);
-        })
-        .fail((error) => {
-            res.status(500).json(error);
-        });
-});
-
-router.post('/business/details/update', (req: Request, res: Response) => {
     const { business } = req.params;
     saveBusinessDetails(business, req.body)
         .then((result) => {

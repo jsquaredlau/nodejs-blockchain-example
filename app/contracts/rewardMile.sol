@@ -33,6 +33,7 @@ contract RewardMile {
     event AgreementVoid(string status, address indexed voidedBy);
     event TxReceived(string status, address indexed fromBusiness, address indexed fromCustomer, string customerID);
     event RewardDistributed(string status, string customerRewarded);
+    event ContractTerminated(string status);
 
     function RewardMile(address _owner, address[] _partners, uint256 _ownerRewardAllocation, address _ownerVault) {
         owner = _owner;
@@ -147,6 +148,13 @@ contract RewardMile {
             txLog[_customerID].patronage[_sendingBusiness].customerAddress = _sendingCustomer;
         }
         return true;
+    }
+
+    function die(address _owner) {
+        /*if (owner == _owner) {*/
+        ContractTerminated('SUCCESS');
+        selfdestruct(_owner);
+        /*}*/
     }
 
 }

@@ -16,10 +16,11 @@ contract FX {
 
     event Transfer(string status, address indexed fromBusiness, address indexed fromAccount, address indexed toAccount, uint256 amountConverted, uint256 amountReceived);
     event AcceptAgreement(string status, address indexed acceptedBy);
-    event VoidAgreement(string status, address indexed voidedBy);
+    event AgreementVoid(string status, address indexed voidedBy);
     event TestFunction(string status, string message);
     /*event ConversionDryrun(string status, address indexed fromBusiness, uint256 amountToConvert, uint256 amountReceivable);*/
     event ConversionDryrun(string status, address indexed fromBusiness, address indexed owner, address indexed partner, uint256 amountToConvert, uint256 amountReceivable);
+    event ContractTerminated(string status);
 
     /* CONSTRUCTOR */
     function FX(address _contractOwner, address _vaultLocation, uint256 _toPartnerX, uint256 _toOwnerX) {
@@ -84,10 +85,10 @@ contract FX {
         AcceptAgreement('SUCCESS', businessAddress);
     }
 
-    function voidAgreement(address businessAddress) {
+    function withdrawAgreement(address businessAddress) {
         if (agreementValid()){
             agreement[businessAddress] = false;
-            VoidAgreement('SUCCESS', businessAddress);
+            AgreementVoid('SUCCESS', businessAddress);
         } else {
             throw;
         }
@@ -101,10 +102,11 @@ contract FX {
         }
     }
 
-    function die() {
-        if (msg.sender == owner) {
-            selfdestruct(owner);
-        }
+    function die(address _owner) {
+        /*if (owner == _owner) {*/
+        ContractTerminated('SUCCESS');
+        selfdestruct(_owner);
+        /*}*/
     }
 
     function testFunction() {
