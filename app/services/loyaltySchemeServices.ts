@@ -17,22 +17,15 @@ const ethConfig = config.get('Ethereum.nodeConfig');
 const web3 = new Web3();
 web3.setProvider(new web3.providers.HttpProvider('http://' + ethConfig.host + ':' + ethConfig.port));
 
+/* DEPLOYMENT */
 export function deployContract(business: string, contractType: string, schemeName: string, details): Q.Promise<{}> {
     return Q.Promise((resolve, reject, notify) => {
         if (contractType === 'vault') {
             vaultDeployment(business, schemeName, details).then((result) => { resolve(result) }).fail((result) => { reject(result) });
-        } else if (contractType === 'merchant') {
-            merchantDeployment(business, schemeName, details).then((result) => { resolve(result) }).fail((result) => { reject(result) });
         } else if (contractType === 'fx') {
             fxDeployment(business, schemeName, details).then((result) => { resolve(result) }).fail((result) => { reject(result) });
         } else if (contractType === 'rewardMile') {
             rewardMileDeployment(business, schemeName, details).then((result) => { resolve(result) }).fail((error) => { reject(error) });
-        } else if (contractType === 'greeter') {
-            const contract = new HelloWorldContract('greeter', ['COME AT ME BRO!!'])
-            contract.deployContract(web3.eth.accounts[0], 'helloworld', details)
-                .then((result) => {
-                    resolve({ status: 200 });
-                });
         } else {
             reject({ status: 500 });
         }
@@ -80,24 +73,6 @@ function vaultDeployment(business: string, schemeName: string, details): Q.Promi
     });
 };
 
-function merchantDeployment(business: string, schemeName: string, details: ContractParameters): Q.Promise<{}> {
-    return Q.Promise((resolve, reject, notify) => {
-        if (details.vaultAddress === undefined || details.vaultAddress === null) {
-            reject({ status: 'No vault address supplied' });
-        } else {
-            const contract = new MerchantContract('Merchant', [details.vaultAddress, business, 0]);
-            contract.deployContract(web3.eth.accounts[0], schemeName, details)
-                .then((result) => {
-                    resolve({ status: 200 });
-                })
-                .fail((error) => {
-                    reject({ status: 500 });
-                });
-        }
-
-    });
-}
-
 function rewardMileDeployment(business: string, schemeName: string, details): Q.Promise<{}> {
     details['owner'] = business;
     return Q.Promise((resolve, reject, notify) => {
@@ -112,6 +87,8 @@ function rewardMileDeployment(business: string, schemeName: string, details): Q.
     });
 }
 
+
+/* PARSE ACTIONS */
 export function runContract(business: string, schemeType: string, schemeName: string, verb: string, details?): Q.Promise<{}> {
     return Q.Promise((resolve, reject, notify) => {
         if (schemeType === 'vault') {
@@ -506,6 +483,8 @@ export function parseContractDeactivation(business: string, schemeName: string):
     })
 }
 
+
+/* CONTRACTS */
 export class ContractPaper {
     public contractFile: string;
     public contractName: string;
@@ -635,34 +614,6 @@ export class FxContract extends ContractPaper {
     }
 }
 
-export class HelloWorldContract extends ContractPaper {
-    public parameters: Array<any>;
-
-    constructor(contractName: string, parameters: Array<any>) {
-        super('helloWorld', contractName);
-        this.parameters = parameters;
-    }
-
-    deployContract(from: number, schemeName: string, details: ContractParameters) {
-        return Q.Promise((resolve, reject, notify) => {
-            this.contract.new(
-                this.parameters[0],
-                { from: from, data: this.bytecode, gas: 1000000 },
-                function(e, contract) {
-                    if (!e) {
-                        if (!contract.address) {
-                            console.log("Contract transaction send: TransactionHash: " + contract.transactionHash + " waiting to be mined...");
-                        } else {
-                            console.log("Contract mined! Address: " + contract.address);
-                            saveDeployedContract('HelloWorld', schemeName, contract.address, details);
-                        }
-                    }
-                }
-            );
-        });
-    }
-}
-
 export class VaultContract extends ContractPaper {
     public parameters: Array<any>;
     constructor(contractName: string, parameters: Array<any>) {
@@ -683,34 +634,6 @@ export class VaultContract extends ContractPaper {
                         } else {
                             console.log("Contract mined! Address: " + contract.address);
                             saveDeployedContract('vault', schemeName, contract.address, details);
-                        }
-                    }
-                }
-            ));
-        });
-    }
-}
-
-export class MerchantContract extends ContractPaper {
-    public parameters: Array<any>;
-    constructor(contractName: string, parameters: Array<any>) {
-        super('merchant', contractName, ['merchant', 'vault']);
-        this.parameters = parameters;
-    }
-    deployContract(from: number, schemeName: string, details: ContractParameters): Q.Promise<{}> {
-        return Q.Promise((resolve, reject, notify) => {
-            resolve(this.contract.new(
-                this.parameters[0], // vaultAddress
-                this.parameters[1], // businessName
-                this.parameters[2], // digitalSignature,
-                { from: from, data: this.bytecode, gas: 1000000 },
-                function(e, contract) {
-                    if (!e) {
-                        if (!contract.address) {
-                            console.log("Contract transaction send: TransactionHash: " + contract.transactionHash + " waiting to be mined...");
-                        } else {
-                            console.log("Contract mined! Address: " + contract.address);
-                            saveDeployedContract('Merchant', schemeName, contract.address, details);
                         }
                     }
                 }

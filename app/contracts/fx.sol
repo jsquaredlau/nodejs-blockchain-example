@@ -18,14 +18,12 @@ contract FX {
     event AcceptAgreement(string status, address indexed acceptedBy);
     event AgreementVoid(string status, address indexed voidedBy);
     event TestFunction(string status, string message);
-    /*event ConversionDryrun(string status, address indexed fromBusiness, uint256 amountToConvert, uint256 amountReceivable);*/
     event ConversionDryrun(string status, address indexed fromBusiness, address indexed owner, address indexed partner, uint256 amountToConvert, uint256 amountReceivable);
     event ContractTerminated(string status);
 
     /* CONSTRUCTOR */
     function FX(address _contractOwner, address _vaultLocation, uint256 _toPartnerX, uint256 _toOwnerX) {
         owner = _contractOwner;
-        /*partnerBusiness = _partnerBusiness;*/
         agreement[_contractOwner] = true;
         toPartnerX = _toPartnerX;
         toOwnerX = _toOwnerX;
@@ -36,14 +34,11 @@ contract FX {
         uint256 amountReceivable;
         if (fromBusiness == owner) {
             amountReceivable = toPartnerX * ( amountToConvert / toOwnerX );
-            /*ConversionDryrun('SUCCESS', fromBusiness, amountToConvert, amountReceivable);*/
             ConversionDryrun('SUCCESS', fromBusiness, owner, partnerBusiness, amountToConvert, amountReceivable);
         } else if (fromBusiness == partnerBusiness) {
             amountReceivable = toOwnerX * ( amountToConvert / toPartnerX );
-            /*ConversionDryrun('SUCCESS', fromBusiness, amountToConvert, amountReceivable);*/
             ConversionDryrun('SUCCESS', fromBusiness, owner, partnerBusiness, amountToConvert, amountReceivable);
         } else {
-            /*ConversionDryrun('FAIL', fromBusiness, amountToConvert, 0);*/
             ConversionDryrun('FAIL', fromBusiness, owner, partnerBusiness, amountToConvert, 0);
         }
     }
@@ -80,7 +75,6 @@ contract FX {
     function acceptAgreement(address businessAddress, address _partnerVaultLocation) {
         partnerBusiness = businessAddress;
         agreement[businessAddress] = true;
-        /*validatedAt = block.timestamp;*/
         vPartnerBusiness = Vault(_partnerVaultLocation);
         AcceptAgreement('SUCCESS', businessAddress);
     }
@@ -103,10 +97,8 @@ contract FX {
     }
 
     function die(address _owner) {
-        /*if (owner == _owner) {*/
         ContractTerminated('SUCCESS');
         selfdestruct(_owner);
-        /*}*/
     }
 
     function testFunction() {

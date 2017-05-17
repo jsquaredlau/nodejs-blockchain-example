@@ -15,9 +15,6 @@ const web3 = new Web3();
 web3.setProvider(new web3.providers.HttpProvider('http://' + ethConfig.get('host') + ':' + ethConfig.get('port')));
 web3.eth.defaultAccount = web3.eth.coinbase;
 
-// const web3 = new Web3();
-// web3.setProvider(new web3.providers.HttpProvider('http://localhost:8545'));
-
 export function retrieveMembershipList(fbId: string): Q.Promise<{}> {
     return Q.Promise((resolve, reject, notify) => {
         queryCutomerMembership(fbId)
@@ -110,7 +107,6 @@ export function registerNewUser(business: string, fbId: string, pw?: string): Q.
 }
 
 /* @ FX */
-
 export function listFxSchemes(business: string, fbId: string): Q.Promise<{}> {
     return Q.Promise((resolve, reject, notify) => {
         queryFxSchemes(business, fbId)

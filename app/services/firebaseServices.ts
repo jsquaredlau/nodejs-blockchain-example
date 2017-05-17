@@ -324,12 +324,6 @@ function moveFbRecord(oldRef, newRef) {
                 else if (typeof (console) !== 'undefined' && console.error) { console.error(error); }
             });
         })
-    // oldRef.once('value', function(snap) {
-    //     newRef.set(snap.val(), function(error) {
-    //         if (!error) { oldRef.remove(); }
-    //         else if (typeof (console) !== 'undefined' && console.error) { console.error(error); }
-    //     });
-    // });
 }
 
 /* @ BUSINESSES */

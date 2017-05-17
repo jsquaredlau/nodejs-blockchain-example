@@ -151,10 +151,8 @@ contract RewardMile {
     }
 
     function die(address _owner) {
-        /*if (owner == _owner) {*/
         ContractTerminated('SUCCESS');
         selfdestruct(_owner);
-        /*}*/
     }
 
 }
