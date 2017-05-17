@@ -14,6 +14,7 @@ const objectValues = require('object-values');
 
 // LIBRARY SETUP
 const ethConfig = config.get('Ethereum.nodeConfig');
+const partnerUrl = config.get('Partner.apiUrl');
 const web3 = new Web3();
 web3.setProvider(new web3.providers.HttpProvider('http://' + ethConfig.host + ':' + ethConfig.port));
 
@@ -39,9 +40,9 @@ function fxDeployment(business: string, schemeName: string, details): Q.Promise<
         } else {
             const contract = new FxContract('FX', [details.vaultAddress, details.toPartnerFx, details.toOwnerFx]);
             let owner;
-            if (business === 'BASYXLab') {
+            if (business === 'Grids Hostel') {
                 owner = web3.eth.accounts[0];
-            } else if (business === 'NeikidFyre') {
+            } else if (business === 'Otaru Cafe') {
                 owner = web3.eth.accounts[1];
             } else {
                 owner = web3.eth.accounts[2];
@@ -124,7 +125,7 @@ export function runContract(business: string, schemeType: string, schemeName: st
                         signingEvent.stopWatching();
                     }
                 });
-                if (business === 'BASYXLab') {
+                if (business === 'Grids Hostel') {
                     contractInstance.testFunction();
                     resolve({ status: 200 });
                 } else {
@@ -144,7 +145,7 @@ export function runContract(business: string, schemeType: string, schemeName: st
                         signingEvent.stopWatching();
                     }
                 });
-                if (business === 'BASYXLab') {
+                if (business === 'Grids Hostel') {
                     contractInstance.acceptAgreement(web3.eth.accounts[0], details.vaultLocation);
                     resolve({ status: 200 });
                 } else {
@@ -209,9 +210,9 @@ export function parseCollaborationAcceptance(business: string, schemeName: strin
                         }
                     });
 
-                    if (business === 'BASYXLab') {
+                    if (business === 'Grids Hostel') {
                         resolve(contractInstance.acceptAgreement(web3.eth.accounts[0], acceptanceInfo.requiredInputs.vaultAddress));
-                    } else if (business === 'NeikidFyre') {
+                    } else if (business === 'Otaru Cafe') {
                         resolve(contractInstance.acceptAgreement(web3.eth.accounts[1], acceptanceInfo.requiredInputs.vaultAddress));
                     } else {
                         resolve(contractInstance.acceptAgreement(web3.eth.accounts[2], acceptanceInfo.requiredInputs.vaultAddress));
@@ -240,9 +241,9 @@ export function parseCollaborationAcceptance(business: string, schemeName: strin
                         }
                     });
 
-                    if (business === 'BASYXLab') {
+                    if (business === 'Grids Hostel') {
                         resolve(contractInstance.acceptAgreement(web3.eth.accounts[0], acceptanceInfo.vaultAddress, acceptanceInfo.requiredInputs.rewardAllocation));
-                    } else if (business === 'NeikidFyre') {
+                    } else if (business === 'Otaru Cafe') {
                         resolve(contractInstance.acceptAgreement(web3.eth.accounts[1], acceptanceInfo.vaultAddress, acceptanceInfo.requiredInputs.rewardAllocation));
                     } else {
                         resolve(contractInstance.acceptAgreement(web3.eth.accounts[2], acceptanceInfo.vaultAddress, acceptanceInfo.requiredInputs.rewardAllocation));
@@ -278,9 +279,9 @@ export function parseCollaborationRejection(business: string, schemeName: string
                         }
                     });
 
-                    if (business === 'BASYXLab') {
+                    if (business === 'Grids Hostel') {
                         resolve(contractInstance.withdrawAgreement(web3.eth.accounts[0]));
-                    } else if (business === 'NeikidFyre') {
+                    } else if (business === 'Otaru Cafe') {
                         resolve(contractInstance.withdrawAgreement(web3.eth.accounts[1]));
                     } else {
                         resolve(contractInstance.withdrawAgreement(web3.eth.accounts[2]));
@@ -308,7 +309,7 @@ export function parseCollaborationRejection(business: string, schemeName: string
                         }
                     });
 
-                    if (business === 'BASYXLab') {
+                    if (business === 'Grids Hostel') {
                         resolve(contractInstance.withdrawAgreement(web3.eth.accounts[0]));
                     } else if (business === 'rejected') {
                         resolve(contractInstance.withdrawAgreement(web3.eth.accounts[1]));
@@ -467,9 +468,9 @@ export function parseContractDeactivation(business: string, schemeName: string):
                             })
                     }
                 });
-                if (business === 'BASYXLab') {
+                if (business === 'Grids Hostel') {
                     contractInstance.die(web3.eth.accounts[0]);
-                } else if (business === 'NeikidFyre') {
+                } else if (business === 'Otaru Cafe') {
                     contractInstance.die(web3.eth.accounts[1]);
                 } else {
                     contractInstance.die(web3.eth.accounts[2]);
@@ -525,9 +526,9 @@ export class FxContract extends ContractPaper {
 
     deployContract(from: number, schemeName: string, details): Q.Promise<{}> {
         let contractOwnerAddress;
-        if (details.owner === 'BASYXLab') {
+        if (details.owner === 'Grids Hostel') {
             contractOwnerAddress = web3.eth.accounts[0];
-        } else if (details.owner === 'NeikidFyre') {
+        } else if (details.owner === 'Otaru Cafe') {
             contractOwnerAddress = web3.eth.accounts[1];
         } else {
             contractOwnerAddress = web3.eth.accounts[2];
@@ -650,9 +651,9 @@ export class RewardMileContract extends ContractPaper {
 
     deployContract(from: number, schemeName: string, details): Q.Promise<{}> {
         let contractOwnerAddress;
-        if (details.owner === 'BASYXLab') {
+        if (details.owner === 'Grids Hostel') {
             contractOwnerAddress = web3.eth.accounts[0];
-        } else if (details.owner === 'NeikidFyre') {
+        } else if (details.owner === 'Otaru Cafe') {
             contractOwnerAddress = web3.eth.accounts[1];
         } else {
             contractOwnerAddress = web3.eth.accounts[2];
@@ -660,17 +661,17 @@ export class RewardMileContract extends ContractPaper {
 
         const partnersInfo = {};
         for (var i in details.partners) {
-            if (details.partners[i] === 'BASYXLab') {
+            if (details.partners[i] === 'Grids Hostel') {
                 partnersInfo[details.partners[i]] = web3.eth.accounts[0];
-            } else if (details.partners[i] === 'NeikidFyre') {
+            } else if (details.partners[i] === 'Otaru Cafe') {
                 partnersInfo[details.partners[i]] = web3.eth.accounts[1];
             } else {
                 partnersInfo[details.partners[i]] = web3.eth.accounts[2];
             }
         }
-        if (details.owner === 'BASYXLab') {
+        if (details.owner === 'Grids Hostel') {
             partnersInfo[details.owner] = web3.eth.accounts[0];
-        } else if (details.ower === 'NeikidFyre') {
+        } else if (details.ower === 'Otaru Cafe') {
             partnersInfo[details.owner] = web3.eth.accounts[1];
         } else {
             partnersInfo[details.owner] = web3.eth.accounts[2];
@@ -678,9 +679,9 @@ export class RewardMileContract extends ContractPaper {
 
         const partnerAddresses = [];
         for (var i in details.partners) {
-            if (details.partners[i] === 'BASYXLab') {
+            if (details.partners[i] === 'Grids Hostel') {
                 partnerAddresses.push(web3.eth.accounts[0]);
-            } else if (details.partners[i] === 'NeikidFyre') {
+            } else if (details.partners[i] === 'Otaru Cafe') {
                 partnerAddresses.push(web3.eth.accounts[1]);
             } else {
                 partnerAddresses.push(web3.eth.accounts[2]);
@@ -734,19 +735,7 @@ export class RewardMileContract extends ContractPaper {
                                 }
                             });
 
-
-
-                            // const terminationEvent = contractInstance.ContractTerminated();
-                            // terminationEvent.watch((error, result) => {
-                            //     if (error) {
-                            //         console.log(error);
-                            //     } else {
-                            //         changeContractStatus(schemeName, details.owner, 'deactivated');
-                            //         terminationEvent.stopWatching();
-                            //     }
-                            // });
-
-                            contractInstance.testFunction();
+                            // contractInstance.testFunction();
 
                             const collaborationRequestObject = {
                                 provider: 'LaaS1',

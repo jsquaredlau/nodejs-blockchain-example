@@ -58,7 +58,7 @@ function sendTxToContract(business: string, customerAddress: string, points: num
             if (error) {
                 console.log(error);
             } else {
-                console.log('### Balance Increase Event ###');
+                console.log('### [MERCHANT API] Balance Increase Event ###');
                 console.log('Contract Type : ' + scheme.type);
                 console.log('Contract at : ' + scheme.address);
                 console.log('Rewarded Customer : ' + customerAddress);
@@ -78,7 +78,7 @@ function sendTxToContract(business: string, customerAddress: string, points: num
             if (error) {
                 console.log(error);
             } else {
-                console.log('### Tx Received Event ###');
+                console.log('### [MERCHANT API] Tx Received Event ###');
                 console.log('Contract Type : ' + scheme.type);
                 console.log('Contract at : ' + scheme.address);
                 console.log('Customer : ' + customerAddress);
@@ -88,11 +88,11 @@ function sendTxToContract(business: string, customerAddress: string, points: num
                 txReceiptEvent.stopWatching();
             }
         });
-        if (business === 'BASYXLab') {
+        if (business === 'Grids Hostel') {
             contractInstance.processTx(web3.eth.accounts[0], customerAddress, fbId);
-        } else if (business === 'NeikidFyre') {
+        } else if (business === 'Otaru Cafe') {
             contractInstance.processTx(web3.eth.accounts[1], customerAddress, fbId);
-        } else if (business === 'Ataraxia') {
+        } else if (business === 'Muffin Collective') {
             contractInstance.processTx(web3.eth.accounts[2], customerAddress, fbId);
         }
     }
@@ -108,7 +108,7 @@ function processRedemption(contractAddress: string, customerAddress: string, poi
                 console.log(error);
             } else {
                 redemptionEvent.stopWatching();
-                console.log('### Balance Decrease Event ###');
+                console.log('### [MERCHANT API] Balance Decrease Event ###');
                 console.log('Contract Type : ' + 'vault');
                 console.log('Contract at : ' + contractAddress);
                 console.log('Rewarded Customer : ' + customerAddress);

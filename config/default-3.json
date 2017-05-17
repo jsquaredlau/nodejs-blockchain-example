@@ -1,0 +1,22 @@
+{
+    "Port": 3002,
+    "Ethereum": {
+        "nodeConfig": {
+            "host": "localhost",
+            "port": 8545
+        }
+    },
+    "Firebase": {
+        "config": {
+            "apiKey": "AIzaSyApzVHNHZeKCDJMJ6ldQEOKYObTw4U7on8",
+            "authDomain": "laas-3.firebaseapp.com",
+            "databaseURL": "https://laas-3.firebaseio.com",
+            "projectId": "laas-3",
+            "storageBucket": "laas-3.appspot.com",
+            "messagingSenderId": "741807936545"
+        }
+    },
+    "Partner": {
+        "apiUrl": "http://localhost:3000/"
+    }
+}

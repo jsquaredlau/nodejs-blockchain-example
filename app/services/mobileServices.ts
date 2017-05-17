@@ -148,9 +148,9 @@ export function checkPointConversion(business: string, schemeName: string, amoun
                         });
                     }
                 });
-                if (business === 'BASYXLab') {
+                if (business === 'Grids Hostel') {
                     contractInstance.conversionDryrun(web3.eth.accounts[0], amount);
-                } else if (business === 'NeikidFyre') {
+                } else if (business === 'Otaru Cafe') {
                     contractInstance.conversionDryrun(web3.eth.accounts[1], amount);
                 } else {
                     contractInstance.conversionDryrun(web3.eth.accounts[2], amount);
@@ -198,9 +198,9 @@ export function makePointConversion(business: string, schemeName: string, amount
                         }
                     }
                 });
-                if (business === 'BASYXLab') {
+                if (business === 'Grids Hostel') {
                     contractInstance.transfer(web3.eth.accounts[0], customerFromAddress, customerToAddress, amount);
-                } else if (business === 'NeikidFyre') {
+                } else if (business === 'Otaru Cafe') {
                     contractInstance.transfer(web3.eth.accounts[1], customerFromAddress, customerToAddress, amount);
                 } else {
                     contractInstance.transfer(web3.eth.accounts[2], customerFromAddress, customerToAddress, amount);
