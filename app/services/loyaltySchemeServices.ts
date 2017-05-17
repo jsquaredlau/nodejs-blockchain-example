@@ -289,20 +289,19 @@ export function parseCollaborationRejection(business: string, schemeName: string
                 .then((collabContractAddress) => {
                     const fx = new ContractPaper('fx', 'FX', ['fx', 'vault']);
                     const contractInstance = fx.contract.at(collabContractAddress);
-                    const voidingEvent = contractInstance.VoidAgreement();
+                    const voidingEvent = contractInstance.AgreementVoid();
 
                     voidingEvent.watch((error, result) => {
                         if (error) {
                             console.log(error);
                         } else {
+                            console.log('### Collaboration Rejection ###');
+                            console.log('[ ' + business + ' ]' + ' has withdrawn agreement from the FX [ ' + schemeName + ' ] scheme');
+                            console.log();
                             changeCollabRequstStatus(business, schemeName, 'deactivated');
                             voidingEvent.stopWatching();
                         }
                     });
-
-                    console.log('### Collaboration Rejection ###');
-                    console.log('[ ' + business + ' ]' + ' has rejected the FX [ ' + schemeName + ' ] scheme');
-                    console.log();
 
                     if (business === 'BASYXLab') {
                         resolve(contractInstance.withdrawAgreement(web3.eth.accounts[0]));
@@ -321,9 +320,18 @@ export function parseCollaborationRejection(business: string, schemeName: string
                     const fx = new ContractPaper('fx', 'FX', ['fx', 'vault']);
                     const contractInstance = fx.contract.at(collabContractAddress);
 
-                    console.log('### Collaboration Rejection ###');
-                    console.log('[ ' + business + ' ]' + ' has rejected the RewardMile [ ' + schemeName + ' ] scheme');
-                    console.log();
+                    const voidingEvent = contractInstance.AgreementVoid();
+                    voidingEvent.watch((error, result) => {
+                        if (error) {
+                            console.log(error);
+                        } else {
+                            console.log('### Collaboration Rejection ###');
+                            console.log('[ ' + business + ' ]' + ' has withdrawn agreement from the FX [ ' + schemeName + ' ] scheme');
+                            console.log();
+                            changeCollabRequstStatus(business, schemeName, 'deactivated');
+                            voidingEvent.stopWatching();
+                        }
+                    });
 
                     if (business === 'BASYXLab') {
                         resolve(contractInstance.withdrawAgreement(web3.eth.accounts[0]));
@@ -346,23 +354,14 @@ function subscribeToRewardMileEvents(business: string, schemeName: string, contr
     const rewardMile = new ContractPaper('rewardMile', 'RewardMile', ['rewardMile', 'vault']);
     const contractInstance = rewardMile.contract.at(contractAddress);
 
-    const voidingEvent = contractInstance.AgreementVoid();
-    voidingEvent.watch((error, result) => {
-        if (error) {
-            console.log(error);
-        } else {
-            console.log(result.args);
-            changeContractStatus(schemeName, business, 'deactivated');
-            voidingEvent.stopWatching();
-        }
-    });
-
     const txReceivedEvent = contractInstance.TxReceived()
     txReceivedEvent.watch((error, result) => {
         if (error) {
             console.log(error);
         } else {
-            console.log(result.args);
+            console.log('### REWARD MILE TX RECEIVED EVENT ###');
+            console.log('TX from business [ ' + result.args._sendingBusiness + ' ] from customer [ ' + result.args_customerID + ' ]')
+            console.log()
         }
     });
 
@@ -371,7 +370,25 @@ function subscribeToRewardMileEvents(business: string, schemeName: string, contr
         if (error) {
             console.log(error);
         } else {
+            console.log('### REWARD MILE DISTRIBUTION EVENT ###');
+            console.log('Reward given to customer [ ' + result.args._customerID + ' ]');
+            console.log()
             console.log(result.args);
+        }
+    });
+
+    const voidingEvent = contractInstance.AgreementVoid();
+    voidingEvent.watch((error, result) => {
+        if (error) {
+            console.log(error);
+        } else {
+            console.log('### Contract void event ###');
+            console.log('Business [ PARTNER ] has withdrawn agreement from [' + schemeName + ' ]')
+            console.log()
+            changeContractStatus(schemeName, business, 'deactivated');
+            rewardDistributedEvent.stopWatching();
+            txReceivedEvent.stopWatching();
+            voidingEvent.stopWatching();
         }
     });
 
@@ -382,6 +399,8 @@ function subscribeToRewardMileEvents(business: string, schemeName: string, contr
         } else {
             console.log('### Contract Termination ###');
             console.log('Business [ ' + 'OWNER' + ' ] has terminated contract [ ' + schemeName + ' ]')
+            rewardDistributedEvent.stopWatching();
+            txReceivedEvent.stopWatching();
             deactivationEvent.stopWatching();
             deactivateDeployedContract(business, schemeName)
                 .then((result) => {
@@ -397,6 +416,7 @@ function subscribeToRewardMileEvents(business: string, schemeName: string, contr
 function subscribeToFxEvents(contractAddress: string, business: string, schemeName: string) {
     const fx = new ContractPaper('fx', 'FX', ['fx', 'vault']);
     const contractInstance = fx.contract.at(contractAddress);
+
     const transferEvent = contractInstance.Transfer();
     transferEvent.watch((error, result) => {
         if (error) {
@@ -423,6 +443,19 @@ function subscribeToFxEvents(contractAddress: string, business: string, schemeNa
                 .fail((error) => {
                     // DO NOTHING
                 })
+        }
+    });
+
+    const voidingEvent = contractInstance.AgreementVoid();
+    voidingEvent.watch((error, result) => {
+        if (error) {
+            console.log(error);
+        } else {
+            console.log('### Contract void event ###');
+            console.log('Business [ PARTNER ] has withdrawn agreement from [' + schemeName + ' ]')
+            console.log()
+            changeContractStatus(schemeName, business, 'deactivated');
+            voidingEvent.stopWatching();
         }
     });
 }
@@ -779,6 +812,8 @@ export class RewardMileContract extends ContractPaper {
                                     validEvent.stopWatching();
                                 }
                             });
+
+
 
                             // const terminationEvent = contractInstance.ContractTerminated();
                             // terminationEvent.watch((error, result) => {
