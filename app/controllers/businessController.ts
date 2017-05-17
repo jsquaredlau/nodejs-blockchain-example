@@ -4,7 +4,7 @@
 // MODULE IMPORTS
 import { Router, Request, Response } from 'express';
 import { deployContract, runContract } from '../services';
-import { listDeployedContracts, updateDeployedContract, saveBusinessDetails, parseContractDeactivation, parseCollaborationRequest, parseCollaborationAcceptance, parseCollaborationRejection } from '../services';
+import { listDeployedContracts, saveBusinessDetails, parseContractDeactivation, parseCollaborationRequest, parseCollaborationAcceptance, parseCollaborationRejection } from '../services';
 import { ContractParameters, CollaborationRequestInfo } from '../models';
 
 const cors = require('cors');
@@ -34,8 +34,10 @@ router.get('/', (req: Request, res: Response) => {
 router.post('/:business/:contractType/:schemeName/deploy', (req: Request, res: Response) => {
     const { business, contractType, schemeName } = req.params;
     const contractParameters = req.body;
-    console.log(req.body);
     contractParameters['owner'] = business;
+
+    this.logRequest(business, 'deploy contract', schemeName);
+
     deployContract(business, contractType, schemeName, contractParameters)
         .then((result) => {
             res.status(200).send('Contract Deployed!');
@@ -48,6 +50,9 @@ router.post('/:business/:contractType/:schemeName/deploy', (req: Request, res: R
 router.post('/collaboration/request/:business', (req: Request, res: Response) => {
     const { business } = req.params;
     const collabInfo = req.body;
+
+    this.logRequest('EXTERNAL', 'collaboration request');
+
     parseCollaborationRequest(business, collabInfo)
         .then((result) => {
             res.status(200).send('Request received');
@@ -60,6 +65,9 @@ router.post('/collaboration/request/:business', (req: Request, res: Response) =>
 router.post('/collaboration/:business/accept/:scheme', (req: Request, res: Response) => {
     const { business, scheme } = req.params;
     const postValues = req.body;
+
+    this.logRequest(business, 'collaboration request accepted', scheme);
+
     parseCollaborationAcceptance(business, scheme.replace('%20', ' '), postValues)
         .then((result) => {
             res.status(200).send('Collaboration Complete');
@@ -72,6 +80,9 @@ router.post('/collaboration/:business/accept/:scheme', (req: Request, res: Respo
 router.post('/collaboration/:business/reject/:scheme', (req: Request, res: Response) => {
     const { business, scheme } = req.params;
     const postValues = req.body;
+
+    this.logRequest(business, 'collaboration rejected', scheme);
+
     parseCollaborationRejection(business, scheme.replace('%20', ' '), postValues)
         .then((result) => {
             res.status(200).send('Collaboration Rejection Complete');
@@ -84,6 +95,9 @@ router.post('/collaboration/:business/reject/:scheme', (req: Request, res: Respo
 router.post('/:business/:schemeType/:schemeName/:verb', (req: Request, res: Response) => {
     const { business, schemeType, schemeName, verb } = req.params;
     const details = req.body
+
+    this.logRequest(business, 'run contract type [ ' + schemeType + ' ] with verb [ ' + verb + ' ]', schemeName);
+
     runContract(business, schemeType, schemeName, verb, details)
         .then((result) => {
             res.status(200).json(result);
@@ -95,6 +109,9 @@ router.post('/:business/:schemeType/:schemeName/:verb', (req: Request, res: Resp
 
 router.get('/:business/scheme/list', (req: Request, res: Response) => {
     const { business } = req.params;
+
+    this.logRequest(business, 'list deployed contract');
+
     listDeployedContracts(business)
         .then((result) => {
             res.status(200).json(result);
@@ -104,27 +121,14 @@ router.get('/:business/scheme/list', (req: Request, res: Response) => {
         });
 });
 
-router.post('/:business/:schemeName/update', (req: Request, res: Response) => {
-    const { business, schemeName } = req.params;
-    if (req.body !== null || req.body !== undefined) {
-        updateDeployedContract(business, schemeName, req.body)
-            .then((result) => {
-                res.sendStatus(200);
-            })
-            .fail((error) => {
-                res.status(500).send(error);
-            })
-    } else {
-        res.sendStatus(400);
-    }
-});
-
 router.post('/:business/scheme/deactivate', (req: Request, res: Response) => {
     const { business } = req.params;
-    console.log('HERE : ' + req.body.schemeName);
     if (req.body.schemeName === null) {
         res.status(400).json({ error: 'No scheme specified' });
     } else {
+
+        this.logRequest(business, 'contract terminated', req.body.schemeName);
+
         parseContractDeactivation(business, req.body.schemeName)
             .then((result) => {
                 res.sendStatus(200).json({});
@@ -136,15 +140,13 @@ router.post('/:business/scheme/deactivate', (req: Request, res: Response) => {
     }
 });
 
-router.post('/:business/details', (req: Request, res: Response) => {
-    const { business } = req.params;
-    saveBusinessDetails(business, req.body)
-        .then((result) => {
-            res.sendStatus(200);
-        })
-        .fail((error) => {
-            res.status(500).json(error);
-        });
-});
+function logRequest(business: string, action: string, schemeName?: string): void {
+    console.log('### [BUSINESS API] Request Received from [ ' + business + ' ] ###');
+    console.log('ACTION : ' + action);
+    if (schemeName) {
+        console.log('SCHEME: ' + schemeName);
+    }
+    console.log();
+}
 
 export const BusinessController: Router = router;

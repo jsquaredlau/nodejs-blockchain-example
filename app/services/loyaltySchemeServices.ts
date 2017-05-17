@@ -200,16 +200,15 @@ export function parseCollaborationAcceptance(business: string, schemeName: strin
                         if (error) {
                             console.log(error);
                         } else {
-                            console.log(result.args);
+                            console.log('### [LAAS API] Collaboration Acceptance ###');
+                            console.log('[ ' + business + ' ]' + ' has accepted the FX [ ' + schemeName + ' ] scheme');
+                            console.log();
                             changeCollabRequstStatus(business, schemeName, 'activated');
                             subscribeToFxEvents(collabContractAddress, business, schemeName);
                             signingEvent.stopWatching();
                         }
                     });
 
-                    console.log('### Collaboration Acceptance ###');
-                    console.log('[ ' + business + ' ]' + ' has accepted the FX [ ' + schemeName + ' ] scheme');
-                    console.log();
                     if (business === 'BASYXLab') {
                         resolve(contractInstance.acceptAgreement(web3.eth.accounts[0], acceptanceInfo.requiredInputs.vaultAddress));
                     } else if (business === 'NeikidFyre') {
@@ -232,16 +231,15 @@ export function parseCollaborationAcceptance(business: string, schemeName: strin
                         if (error) {
                             console.log(error);
                         } else {
-                            console.log(result.args);
+                            console.log('### [LAAS API] Collaboration Acceptance ###');
+                            console.log('[ ' + business + ' ]' + ' has accepted the RewardMile [ ' + schemeName + ' ] scheme');
+                            console.log();
                             changeCollabRequstStatus(business, schemeName, 'activated');
                             subscribeToRewardMileEvents(business, schemeName, collabContractAddress);
                             signingEvent.stopWatching();
                         }
                     });
 
-                    console.log('### Collaboration Acceptance ###');
-                    console.log('[ ' + business + ' ]' + ' has accepted the RewardMile [ ' + schemeName + ' ] scheme');
-                    console.log();
                     if (business === 'BASYXLab') {
                         resolve(contractInstance.acceptAgreement(web3.eth.accounts[0], acceptanceInfo.vaultAddress, acceptanceInfo.requiredInputs.rewardAllocation));
                     } else if (business === 'NeikidFyre') {
@@ -272,7 +270,7 @@ export function parseCollaborationRejection(business: string, schemeName: string
                         if (error) {
                             console.log(error);
                         } else {
-                            console.log('### Collaboration Rejection ###');
+                            console.log('### [LAAS API] Collaboration Rejection ###');
                             console.log('[ ' + business + ' ]' + ' has withdrawn agreement from the FX [ ' + schemeName + ' ] scheme');
                             console.log();
                             changeCollabRequstStatus(business, schemeName, 'deactivated');
@@ -302,7 +300,7 @@ export function parseCollaborationRejection(business: string, schemeName: string
                         if (error) {
                             console.log(error);
                         } else {
-                            console.log('### Collaboration Rejection ###');
+                            console.log('### [LAAS API] Collaboration Rejection ###');
                             console.log('[ ' + business + ' ]' + ' has withdrawn agreement from the FX [ ' + schemeName + ' ] scheme');
                             console.log();
                             changeCollabRequstStatus(business, schemeName, 'deactivated');
@@ -336,7 +334,7 @@ function subscribeToRewardMileEvents(business: string, schemeName: string, contr
         if (error) {
             console.log(error);
         } else {
-            console.log('### REWARD MILE TX RECEIVED EVENT ###');
+            console.log('### [LAAS API] REWARD MILE TX RECEIVED EVENT ###');
             console.log('TX from business [ ' + result.args._sendingBusiness + ' ] from customer [ ' + result.args_customerID + ' ]')
             console.log()
         }
@@ -347,7 +345,7 @@ function subscribeToRewardMileEvents(business: string, schemeName: string, contr
         if (error) {
             console.log(error);
         } else {
-            console.log('### REWARD MILE DISTRIBUTION EVENT ###');
+            console.log('### [LAAS API] REWARD MILE DISTRIBUTION EVENT ###');
             console.log('Reward given to customer [ ' + result.args._customerID + ' ]');
             console.log()
             console.log(result.args);
@@ -359,7 +357,7 @@ function subscribeToRewardMileEvents(business: string, schemeName: string, contr
         if (error) {
             console.log(error);
         } else {
-            console.log('### Contract void event ###');
+            console.log('### [LAAS API] Contract void event ###');
             console.log('Business [ PARTNER ] has withdrawn agreement from [' + schemeName + ' ]')
             console.log()
             changeContractStatus(schemeName, business, 'deactivated');
@@ -374,7 +372,7 @@ function subscribeToRewardMileEvents(business: string, schemeName: string, contr
         if (error) {
             console.log(error);
         } else {
-            console.log('### Contract Termination ###');
+            console.log('### [LAAS API] Contract Termination ###');
             console.log('Business [ ' + 'OWNER' + ' ] has terminated contract [ ' + schemeName + ' ]')
             rewardDistributedEvent.stopWatching();
             txReceivedEvent.stopWatching();
@@ -399,9 +397,12 @@ function subscribeToFxEvents(contractAddress: string, business: string, schemeNa
         if (error) {
             console.log(error);
         } else {
-            console.log(result.args);
-            //TODO: add transaction to Firebase
-            transferEvent.stopWatching();
+            console.log('### [LAAS API] Contract Event : FX ###');
+            console.log('Business : [ ' + business + ' ]');
+            console.log('Customer src acc : [ ' + result.args.fromAccount + ' ]');
+            console.log('Customer dst acc : [ ' + result.args.toAccount + ' ]');
+            console.log('Amount converted : [ ' + result.args.amountConverted + ' ]');
+            console.log('Amount receievd : [ ' + result.args.amountReceived + ' ]');
         }
     });
 
@@ -410,16 +411,11 @@ function subscribeToFxEvents(contractAddress: string, business: string, schemeNa
         if (error) {
             console.log(error);
         } else {
-            console.log('### Contract Termination ###');
-            console.log('Business [ ' + 'OWNER' + ' ] has terminated contract [ ' + schemeName + ' ]')
+            console.log('### [LAAS API] Contract Termination ###');
+            console.log('Business [ ' + 'OWNER' + ' ] has terminated contract [ ' + schemeName + ' ]');
+            deactivateDeployedContract(business, schemeName).then((result) => { }).fail((error) => { });
             deactivationEvent.stopWatching();
-            deactivateDeployedContract(business, schemeName)
-                .then((result) => {
-                    // DO NOTHING
-                })
-                .fail((error) => {
-                    // DO NOTHING
-                })
+            transferEvent.stopWatching();
         }
     });
 
@@ -428,10 +424,12 @@ function subscribeToFxEvents(contractAddress: string, business: string, schemeNa
         if (error) {
             console.log(error);
         } else {
-            console.log('### Contract void event ###');
+            console.log('### [LAAS API] Contract void event ###');
             console.log('Business [ PARTNER ] has withdrawn agreement from [' + schemeName + ' ]')
             console.log()
             changeContractStatus(schemeName, business, 'deactivated');
+            transferEvent.stopWatching();
+            deactivationEvent.stopWatching();
             voidingEvent.stopWatching();
         }
     });
@@ -457,7 +455,7 @@ export function parseContractDeactivation(business: string, schemeName: string):
                     if (error) {
                         reject(error);
                     } else {
-                        console.log('### Contract Termination ###');
+                        console.log('### [LAAS API] Contract Termination ###');
                         console.log('Business [ ' + business + ' ] has terminated contract [ ' + schemeName + ' ]')
                         deactivationEvent.stopWatching();
                         deactivateDeployedContract(business, schemeName)

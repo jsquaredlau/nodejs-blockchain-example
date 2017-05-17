@@ -66,7 +66,7 @@ export function checkCustomerPointBalance(business: string, fbId: string, custom
                         reject({});
                     } else {
                         balanceCheckEvent.stopWatching();
-                        console.log('### Balance Check Event ###');
+                        console.log('### [MOBILE API] Balance Check Event ###');
                         console.log('Contract at : ' + vaultAddress);
                         console.log('Customer : ' + result.args.customer);
                         console.log('Balance : ' + result.args.balance);
@@ -133,7 +133,7 @@ export function checkPointConversion(business: string, schemeName: string, amoun
                         reject({});
                     } else {
                         fxConversionDryrunEvent.stopWatching();
-                        console.log('### FX Conversion Dryrun Event ###');
+                        console.log('### [MOBILE API] FX Conversion Dryrun Event ###');
                         console.log('Status : ' + result.args.status);
                         console.log('Contract at : ' + contractAddress);
                         console.log('From business : ' + result.args.fromBusiness);
@@ -177,7 +177,7 @@ export function makePointConversion(business: string, schemeName: string, amount
                     } else {
                         transferEvent.stopWatching();
                         console.log(result.args);
-                        console.log('### FX Transfer Event ###');
+                        console.log('### [MOBILE API] FX Transfer Event ###');
                         console.log('Status : ' + result.args.status);
                         console.log('Contract at : ' + contractAddress);
                         console.log('From business : ' + result.args.fromBusiness);

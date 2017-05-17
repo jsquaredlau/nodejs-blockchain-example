@@ -15,8 +15,21 @@ const router: Router = Router();
 // });
 
 /* @ LAAS */
+
+function logRequest(business: string, action: string, schemeName?: string): void {
+    console.log('### [MOBILE API] Request Received from [ ' + business + ' ] ###');
+    console.log('ACTION : ' + action);
+    if (schemeName) {
+        console.log('SCHEME: ' + schemeName);
+    }
+    console.log();
+}
+
 router.post('/laas/:business/user/new', (req: Request, res: Response) => {
     const { business } = req.params;
+
+    this.logRequest(business, 'create new user');
+
     registerNewUser(business, req.body.fbId, req.body.password)
         .then((result) => {
             res.status(200).send(result);
@@ -27,6 +40,9 @@ router.post('/laas/:business/user/new', (req: Request, res: Response) => {
 });
 
 router.get('/laas/businesses', (req: Request, res: Response) => {
+
+    this.logRequest('NONE', 'list provider companies');
+
     retrieveBusinsessList()
         .then((result) => {
             res.status(200).send(result);
@@ -38,6 +54,9 @@ router.get('/laas/businesses', (req: Request, res: Response) => {
 
 router.get('/lass/businesses/:business', (req: Request, res: Response) => {
     const { business } = req.params;
+
+    this.logRequest(business, 'check if business belongs with provider');
+
     isBusiness(business)
         .then((result) => {
             res.status(200).send(result);
@@ -51,7 +70,7 @@ router.get('/lass/businesses/:business', (req: Request, res: Response) => {
 router.post('/user/:business/points/check', (req: Request, res: Response) => {
     const { business } = req.params;
 
-    console.log('### Received BalanceCheck Request ###');
+    console.log('### [MOBILE API]Received BalanceCheck Request ###');
     console.log('Customer : ' + req.body.fbId);
     console.log();
 
@@ -66,6 +85,9 @@ router.post('/user/:business/points/check', (req: Request, res: Response) => {
 
 router.post('/user/membership/:business/accountaddress', (req: Request, res: Response) => {
     const { business } = req.params;
+
+    this.logRequest(business, 'retrieve membership id for customer [ ' + req.body.fbId + ' ]');
+
     retrieveMembershipId(business, req.body.fbId)
         .then((result) => {
             res.status(200).send(result);
@@ -76,6 +98,9 @@ router.post('/user/membership/:business/accountaddress', (req: Request, res: Res
 });
 
 router.post('/user/membership/list', (req: Request, res: Response) => {
+
+    this.logRequest('NONE', 'retrieve memerbships for customer [ ' + req.body.fbId + ' ]');
+
     retrieveMembershipList(req.body.fbId)
         .then((result) => {
             res.status(200).send(result);
@@ -90,6 +115,8 @@ router.post('/user/membership/list', (req: Request, res: Response) => {
 router.post('/:business/fx/list', (req: Request, res: Response) => {
     const { business } = req.params;
 
+    this.logRequest(business, 'list all FX contracts');
+
     listFxSchemes(business, req.body.fbId)
         .then((result) => {
             res.status(200).send(result);
@@ -101,6 +128,9 @@ router.post('/:business/fx/list', (req: Request, res: Response) => {
 
 router.post('/:business/fx/check', (req: Request, res: Response) => {
     const { business } = req.params;
+
+    this.logRequest(business, 'dry run of point conversion in scheme [ ' + req.body.schemeName + ' ]', req.body.schemeName);
+
     checkPointConversion(business, req.body.schemeName, parseInt(req.body.amountToConvert))
         .then((result) => {
             res.status(200).send(result);
@@ -112,6 +142,9 @@ router.post('/:business/fx/check', (req: Request, res: Response) => {
 
 router.post('/:business/fx/convert', (req: Request, res: Response) => {
     const { business } = req.params;
+
+    this.logRequest(business, 'point conversion by customer of [ ' + req.body.amountToConvert + ' ]', req.body.schemeName);
+
     makePointConversion(business, req.body.schemeName, req.body.amountToConvert, req.body.customerFromAddress, req.body.customerToAddress)
         .then((result) => {
             res.status(200).send(result);
