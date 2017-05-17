@@ -14,7 +14,7 @@ const objectValues = require('object-values');
 
 // LIBRARY SETUP
 const ethConfig = config.get('Ethereum.nodeConfig');
-const partnerUrl = config.get('Partner.apiUrl');
+const partner = config.get('Partner');
 const web3 = new Web3();
 web3.setProvider(new web3.providers.HttpProvider('http://' + ethConfig.host + ':' + ethConfig.port));
 
@@ -594,7 +594,7 @@ export class FxContract extends ContractPaper {
                                 }
                             });
                             request({
-                                url: this.partnerUrl + '/api/v1/business/collaboration/request/' + details.requestedPartner,
+                                url: this.partner.apiUrl + '/api/v1/business/collaboration/request/' + details.requestedPartner,
                                 method: 'POST',
                                 headers: {
                                     'Content-Type': 'application/json',
@@ -752,7 +752,7 @@ export class RewardMileContract extends ContractPaper {
 
                             for (var i in details.partners) {
                                 request({
-                                    url: this.partnerUrl + '/api/v1/business/collaboration/request/' + details.partners[i],
+                                    url: this.partner.apiUrl + '/api/v1/business/collaboration/request/' + details.partners[i],
                                     method: 'POST',
                                     headers: {
                                         'Content-Type': 'application/json',
