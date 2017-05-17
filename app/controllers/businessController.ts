@@ -36,7 +36,7 @@ router.post('/:business/:contractType/:schemeName/deploy', (req: Request, res: R
     const contractParameters = req.body;
     contractParameters['owner'] = business;
 
-    this.logRequest(business, 'deploy contract', schemeName);
+    logRequest(business, 'deploy contract', schemeName);
 
     deployContract(business, contractType, schemeName, contractParameters)
         .then((result) => {
@@ -51,7 +51,7 @@ router.post('/collaboration/request/:business', (req: Request, res: Response) =>
     const { business } = req.params;
     const collabInfo = req.body;
 
-    this.logRequest('EXTERNAL', 'collaboration request');
+    logRequest('EXTERNAL', 'collaboration request');
 
     parseCollaborationRequest(business, collabInfo)
         .then((result) => {
@@ -66,7 +66,7 @@ router.post('/collaboration/:business/accept/:scheme', (req: Request, res: Respo
     const { business, scheme } = req.params;
     const postValues = req.body;
 
-    this.logRequest(business, 'collaboration request accepted', scheme);
+    logRequest(business, 'collaboration request accepted', scheme);
 
     parseCollaborationAcceptance(business, scheme.replace('%20', ' '), postValues)
         .then((result) => {
@@ -81,7 +81,7 @@ router.post('/collaboration/:business/reject/:scheme', (req: Request, res: Respo
     const { business, scheme } = req.params;
     const postValues = req.body;
 
-    this.logRequest(business, 'collaboration rejected', scheme);
+    logRequest(business, 'collaboration rejected', scheme);
 
     parseCollaborationRejection(business, scheme.replace('%20', ' '), postValues)
         .then((result) => {
@@ -96,7 +96,7 @@ router.post('/:business/:schemeType/:schemeName/:verb', (req: Request, res: Resp
     const { business, schemeType, schemeName, verb } = req.params;
     const details = req.body
 
-    this.logRequest(business, 'run contract type [ ' + schemeType + ' ] with verb [ ' + verb + ' ]', schemeName);
+    logRequest(business, 'run contract type [ ' + schemeType + ' ] with verb [ ' + verb + ' ]', schemeName);
 
     runContract(business, schemeType, schemeName, verb, details)
         .then((result) => {
@@ -110,7 +110,7 @@ router.post('/:business/:schemeType/:schemeName/:verb', (req: Request, res: Resp
 router.get('/:business/scheme/list', (req: Request, res: Response) => {
     const { business } = req.params;
 
-    this.logRequest(business, 'list deployed contract');
+    logRequest(business, 'list deployed contract');
 
     listDeployedContracts(business)
         .then((result) => {
@@ -127,7 +127,7 @@ router.post('/:business/scheme/deactivate', (req: Request, res: Response) => {
         res.status(400).json({ error: 'No scheme specified' });
     } else {
 
-        this.logRequest(business, 'contract terminated', req.body.schemeName);
+        logRequest(business, 'contract terminated', req.body.schemeName);
 
         parseContractDeactivation(business, req.body.schemeName)
             .then((result) => {

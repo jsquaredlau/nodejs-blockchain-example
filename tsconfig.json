@@ -23,7 +23,6 @@
         "app/controllers/index.ts",
         "app/controllers/merchantController.ts",
         "app/controllers/mobileController.ts",
-        "app/controllers/userController.ts",
         "app/controllers/welcomeController.ts",
         "app/models/index.ts",
         "app/models/interfaces.ts",
@@ -33,7 +32,5 @@
         "app/services/loyaltySchemeServices.ts",
         "app/services/merchantServices.ts",
         "app/services/mobileServices.ts",
-        "app/services/solidityOps.ts",
-        "app/services/web3Services.ts"
     ]
 }
