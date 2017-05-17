@@ -16,6 +16,6 @@
         }
     },
     "Partner": {
-        "apiUrl": "http://jsquared.gq:3001/"
+        "apiUrl": "http://jsquared.gq:3001"
     }
 }

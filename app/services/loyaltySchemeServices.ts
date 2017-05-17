@@ -594,7 +594,7 @@ export class FxContract extends ContractPaper {
                                 }
                             });
                             request({
-                                url: 'http://localhost:3000/api/v1/business/collaboration/request/' + details.requestedPartner,
+                                url: this.partnerUrl + '/api/v1/business/collaboration/request/' + details.requestedPartner,
                                 method: 'POST',
                                 headers: {
                                     'Content-Type': 'application/json',
@@ -752,7 +752,7 @@ export class RewardMileContract extends ContractPaper {
 
                             for (var i in details.partners) {
                                 request({
-                                    url: 'http://localhost:3000/api/v1/business/collaboration/request/' + details.partners[i],
+                                    url: this.partnerUrl + '/api/v1/business/collaboration/request/' + details.partners[i],
                                     method: 'POST',
                                     headers: {
                                         'Content-Type': 'application/json',
