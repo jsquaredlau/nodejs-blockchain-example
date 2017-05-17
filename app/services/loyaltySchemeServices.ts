@@ -374,6 +374,24 @@ function subscribeToRewardMileEvents(business: string, schemeName: string, contr
             console.log(result.args);
         }
     });
+
+    const deactivationEvent = contractInstance.ContractTerminated();
+    deactivationEvent.watch((error, result) => {
+        if (error) {
+            console.log(error);
+        } else {
+            console.log('### Contract Termination ###');
+            console.log('Business [ ' + 'OWNER' + ' ] has terminated contract [ ' + schemeName + ' ]')
+            deactivationEvent.stopWatching();
+            deactivateDeployedContract(business, schemeName)
+                .then((result) => {
+                    // DO NOTHING
+                })
+                .fail((error) => {
+                    // DO NOTHING
+                })
+        }
+    });
 }
 
 function subscribeToFxEvents(contractAddress: string, business: string, schemeName: string) {
@@ -407,7 +425,6 @@ function subscribeToFxEvents(contractAddress: string, business: string, schemeNa
                 })
         }
     });
-    //TODO: contract voiding event
 }
 
 export function parseContractDeactivation(business: string, schemeName: string): Q.Promise<{}> {
@@ -758,20 +775,20 @@ export class RewardMileContract extends ContractPaper {
                                     console.log(error);
                                 } else {
                                     changeContractStatus(schemeName, details.owner, 'active')
-                                    // subscribeToRewardMileEvents(details.owner, schemeName, contract.address);
+                                    subscribeToRewardMileEvents(details.owner, schemeName, contract.address);
                                     validEvent.stopWatching();
                                 }
                             });
 
-                            const terminationEvent = contractInstance.ContractTerminated();
-                            terminationEvent.watch((error, result) => {
-                                if (error) {
-                                    console.log(error);
-                                } else {
-                                    changeContractStatus(schemeName, details.owner, 'deactivated');
-                                    terminationEvent.stopWatching();
-                                }
-                            });
+                            // const terminationEvent = contractInstance.ContractTerminated();
+                            // terminationEvent.watch((error, result) => {
+                            //     if (error) {
+                            //         console.log(error);
+                            //     } else {
+                            //         changeContractStatus(schemeName, details.owner, 'deactivated');
+                            //         terminationEvent.stopWatching();
+                            //     }
+                            // });
 
                             contractInstance.testFunction();
 

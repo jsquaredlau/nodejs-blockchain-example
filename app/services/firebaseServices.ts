@@ -135,6 +135,7 @@ export function saveDeployedContract(contractType: string, schemeName: string, c
 
 function saveRewardMileContract(schemeName: string, contractAddress: number, details): void {
     database.ref('schemes/' + details.owner + '/' + schemeName).set({
+        owner: details.owner,
         contractAddress: contractAddress,
         contractType: details.contractType,
         partners: details.partners,
