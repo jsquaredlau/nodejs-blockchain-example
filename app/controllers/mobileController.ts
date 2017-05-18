@@ -103,9 +103,11 @@ router.post('/user/membership/list', (req: Request, res: Response) => {
 
     retrieveMembershipList(req.body.fbId)
         .then((result) => {
+            console.log(result);
             res.status(200).send(result);
         })
         .fail((error) => {
+            console.log(error);
             res.status(500).send(error);
         });
 });

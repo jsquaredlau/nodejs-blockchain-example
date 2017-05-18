@@ -457,7 +457,7 @@ export function parseContractDeactivation(business: string, schemeName: string):
                         reject(error);
                     } else {
                         console.log('### [LAAS API] Contract Termination ###');
-                        console.log('Business [ ' + business + ' ] has terminated contract [ ' + schemeName + ' ]')
+                        console.log('Business [ ' + business + ' ] has terminated contract [ ' + schemeName + ' ]');
                         deactivationEvent.stopWatching();
                         deactivateDeployedContract(business, schemeName)
                             .then((result) => {
@@ -571,16 +571,38 @@ export class FxContract extends ContractPaper {
                                 if (error) {
                                     console.log(error);
                                 } else {
+                                    console.log('### [LAAS API] Contract Signing Event ###');
+                                    console.log('Business [ ' + details.requestedPartner + ' ] has signed contract [ ' + schemeName + ' ]')
                                     changeContractStatus(schemeName, details.owner, 'active');
                                     signingEvent.stopWatching();
                                 }
                             });
+
+                            const transferEvent = contractInstance.Transfer();
+                            transferEvent.watch((error, result) => {
+                                if (error) {
+                                    console.log(error);
+                                } else {
+                                    console.log('### [LAAS API] Contract Event : FX ###');
+                                    console.log('Business : [ ' + details.requestedPartner + ' ]');
+                                    console.log('Customer src acc : [ ' + result.args.fromAccount + ' ]');
+                                    console.log('Customer dst acc : [ ' + result.args.toAccount + ' ]');
+                                    console.log('Amount converted : [ ' + result.args.amountConverted + ' ]');
+                                    console.log('Amount receievd : [ ' + result.args.amountReceived + ' ]');
+                                }
+                            });
+
                             const voidingEvent = contractInstance.AgreementVoid();
                             voidingEvent.watch((error, result) => {
                                 if (error) {
                                     console.log(error);
                                 } else {
+                                    console.log('### [LAAS API] Contract void event ###');
+                                    console.log('Business [ ' + details.requestedPartner + ' ] has withdrawn agreement from [' + schemeName + ' ]')
+                                    console.log()
                                     changeContractStatus(schemeName, details.owner, 'deactivated');
+                                    transferEvent.stopWatching();
+                                    terminationEvent.stopWatching();
                                     voidingEvent.stopWatching();
                                 }
                             });
@@ -589,8 +611,12 @@ export class FxContract extends ContractPaper {
                                 if (error) {
                                     console.log(error);
                                 } else {
+                                    console.log('### [LAAS API] Contract Termination ###');
+                                    console.log('Business [ ' + details.owner + ' ] has terminated contract [ ' + schemeName + ' ]');
                                     changeContractStatus(schemeName, details.owner, 'deactivated');
+                                    transferEvent.stopWatching();
                                     terminationEvent.stopWatching();
+                                    voidingEvent.stopWatching();
                                 }
                             });
                             request({
@@ -714,21 +740,24 @@ export class RewardMileContract extends ContractPaper {
 
                             const rewardMile = new ContractPaper('rewardMile', 'RewardMile', ['rewardMile', 'vault']);
                             const contractInstance = rewardMile.contract.at(contract.address);
-                            const testEvent = eval('contractInstance.' + 'TestFunction()');
-                            testEvent.watch((error, result) => {
-                                if (error) {
-                                    console.log(error);
-                                } else {
-                                    console.log(result.args);
-                                    testEvent.stopWatching();
-                                }
-                            });
+                            // const testEvent = eval('contractInstance.' + 'TestFunction()');
+                            // testEvent.watch((error, result) => {
+                            //     if (error) {
+                            //         console.log(error);
+                            //     } else {
+                            //         console.log(result.args);
+                            //         testEvent.stopWatching();
+                            //     }
+                            // });
 
                             const validEvent = contractInstance.AgreementValid();
                             validEvent.watch((error, result) => {
                                 if (error) {
                                     console.log(error);
                                 } else {
+                                    console.log('### [LAAS API] Contract Agreement Event ###');
+                                    console.log('Business [ PARTNER ] has agreed to [' + schemeName + ' ] by [ ' + details.owner + ' ]')
+                                    console.log()
                                     changeContractStatus(schemeName, details.owner, 'active')
                                     subscribeToRewardMileEvents(details.owner, schemeName, contract.address);
                                     validEvent.stopWatching();
