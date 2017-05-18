@@ -363,25 +363,25 @@ export function queryFxSchemes(business: string, fbId: string): Q.Promise<{}> {
                         for (const scheme in fxSnapshot.val()) {
                             if (fxSnapshot.val()[scheme].contractType === 'fx') {
                                 if (business === fxSnapshot.val()[scheme].owner) {
-                                    if (fxSnapshot.val()[scheme].status !== 'pending' && memberships.indexOf(fxSnapshot.val()[scheme].requestedPartner) > -1) {
-                                        fxPartners.push({
-                                            schemeName: scheme,
-                                            owner: fxSnapshot.val()[scheme].owner,
-                                            partner: fxSnapshot.val()[scheme].requestedPartner,
-                                            toOwnerFx: fxSnapshot.val()[scheme].toOwnerFx,
-                                            toPartnerFx: fxSnapshot.val()[scheme].toPartnerFx
-                                        });
-                                    }
+                                    // if (fxSnapshot.val()[scheme].status !== 'pending' && memberships.indexOf(fxSnapshot.val()[scheme].requestedPartner) > -1) {
+                                    fxPartners.push({
+                                        schemeName: scheme,
+                                        owner: fxSnapshot.val()[scheme].owner,
+                                        partner: fxSnapshot.val()[scheme].requestedPartner,
+                                        toOwnerFx: fxSnapshot.val()[scheme].toOwnerFx,
+                                        toPartnerFx: fxSnapshot.val()[scheme].toPartnerFx
+                                    });
+                                    // }
                                 } else {
-                                    if (fxSnapshot.val()[scheme].status !== 'pending' && memberships.indexOf(fxSnapshot.val()[scheme].owner) > -1) {
-                                        fxPartners.push({
-                                            schemeName: scheme,
-                                            owner: fxSnapshot.val()[scheme].owner,
-                                            partner: fxSnapshot.val()[scheme].owner,
-                                            toOwnerFx: fxSnapshot.val()[scheme].toOwnerFx,
-                                            toPartnerFx: fxSnapshot.val()[scheme].toPartnerFx
-                                        });
-                                    }
+                                    // if (fxSnapshot.val()[scheme].status !== 'pending' && memberships.indexOf(fxSnapshot.val()[scheme].owner) > -1) {
+                                    fxPartners.push({
+                                        schemeName: scheme,
+                                        owner: fxSnapshot.val()[scheme].owner,
+                                        partner: fxSnapshot.val()[scheme].owner,
+                                        toOwnerFx: fxSnapshot.val()[scheme].toOwnerFx,
+                                        toPartnerFx: fxSnapshot.val()[scheme].toPartnerFx
+                                    });
+                                    // }
                                 }
                             }
                         }
