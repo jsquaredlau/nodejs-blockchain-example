@@ -176,7 +176,6 @@ export function makePointConversion(business: string, schemeName: string, amount
                         reject({});
                     } else {
                         transferEvent.stopWatching();
-                        console.log(result.args);
                         console.log('### [MOBILE API] FX Transfer Event ###');
                         console.log('Status : ' + result.args.status);
                         console.log('Contract at : ' + contractAddress);
