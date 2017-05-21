@@ -33,7 +33,7 @@ router.post('/:business/points/distribute', (req: Request, res: Response) => {
             res.status(200).send();
         })
         .fail((error) => {
-            res.status(400).send();
+            res.status(400).send(error);
         })
 });
 

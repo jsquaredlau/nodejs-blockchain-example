@@ -116,7 +116,7 @@ function processRedemption(contractAddress: string, customerAddress: string, poi
                 console.log('Old Balance : ' + result.args.oldBalance);
                 console.log('New Balance : ' + result.args.newBalance);
                 console.log();
-                if (result.status === 'SUCCESS') {
+                if (result.args.status === 'SUCCESS') {
                     resolve({});
                 } else {
                     reject({ error: 'Insufficient balance' });
