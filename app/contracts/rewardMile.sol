@@ -39,7 +39,7 @@ contract RewardMile {
         owner = _owner;
         partners = _partners;
         partnerDetails[owner] = BusinessDetails({exists: true, agreed: true, rewardAllocation: _ownerRewardAllocation, vault: Vault(_ownerVault)});
-        /*partners.push(owner);*/
+        partners.push(owner);
     }
 
     function testFunction() {
@@ -65,7 +65,6 @@ contract RewardMile {
         }
 
         if (isPartner){
-            partners.push(_partner);
             partnerDetails[_partner] = BusinessDetails({exists: true, agreed: true, rewardAllocation: _partnerRewardAllocation, vault: Vault(_partnerVaultLocation)});
             if (agreementValid()) {
                 AgreementValid('SUCCESS');
