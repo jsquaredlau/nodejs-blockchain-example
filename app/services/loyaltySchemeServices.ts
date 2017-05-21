@@ -15,6 +15,7 @@ const objectValues = require('object-values');
 // LIBRARY SETUP
 const ethConfig = config.get('Ethereum.nodeConfig');
 const partner = config.get('Partner');
+const self = config.get('Self');
 const web3 = new Web3();
 web3.setProvider(new web3.providers.HttpProvider('http://' + ethConfig.host + ':' + ethConfig.port));
 
@@ -780,8 +781,23 @@ export class RewardMileContract extends ContractPaper {
                             }
 
                             for (var i in details.partners) {
+                                let requestUrl;
+                                if (details.owner === 'Grids Hostel') {
+                                    if (details.partners[i] === 'Grids Hostel') {
+                                        requestUrl = self.apiUrl;
+                                    } else {
+                                        requestUrl = partner.apiUrl;
+                                    }
+                                } else {
+                                    if (details.partners[i] === 'Grids Hostel') {
+                                        requestUrl = partner.apiUrl;
+                                    } else {
+                                        requestUrl = self.apiUrl;
+                                    }
+                                }
+
                                 request({
-                                    url: partner.apiUrl + '/api/v1/business/collaboration/request/' + details.partners[i],
+                                    url: requestUrl + '/api/v1/business/collaboration/request/' + details.partners[i],
                                     method: 'POST',
                                     headers: {
                                         'Content-Type': 'application/json',

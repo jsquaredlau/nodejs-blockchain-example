@@ -17,5 +17,8 @@
     },
     "Partner": {
         "apiUrl": "http://jsquared.gq:3001"
+    },
+    "Self": {
+        "apiUrl": "http://jsquared.ga:3000"
     }
 }
