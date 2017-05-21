@@ -715,6 +715,8 @@ export class RewardMileContract extends ContractPaper {
             }
         }
 
+        console.log(partnerAddresses);
+
         return Q.Promise((resolve, reject, notify) => {
             resolve(this.contract.new(
                 contractOwnerAddress,

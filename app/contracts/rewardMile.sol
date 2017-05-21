@@ -39,7 +39,7 @@ contract RewardMile {
         owner = _owner;
         partners = _partners;
         partnerDetails[owner] = BusinessDetails({exists: true, agreed: true, rewardAllocation: _ownerRewardAllocation, vault: Vault(_ownerVault)});
-        partners.push(owner);
+        /*partners.push(owner);*/
     }
 
     function testFunction() {
@@ -56,23 +56,23 @@ contract RewardMile {
     }
 
     function acceptAgreement(address _partner, address _partnerVaultLocation, uint256 _partnerRewardAllocation) {
-        /*bool isPartner = false;
+        bool isPartner = false;
         for(uint256 i = 0; i < partners.length; i++){
             if (partners[i] == _partner) {
                 isPartner = true;
                 break;
             }
-        }*/
-
-        /*if (isPartner){*/
-        partners.push(_partner);
-        partnerDetails[_partner] = BusinessDetails({exists: true, agreed: true, rewardAllocation: _partnerRewardAllocation, vault: Vault(_partnerVaultLocation)});
-        if (agreementValid()) {
-            AgreementValid('SUCCESS');
         }
-        /*} else {
+
+        if (isPartner){
+            partners.push(_partner);
+            partnerDetails[_partner] = BusinessDetails({exists: true, agreed: true, rewardAllocation: _partnerRewardAllocation, vault: Vault(_partnerVaultLocation)});
+            if (agreementValid()) {
+                AgreementValid('SUCCESS');
+            }
+        } else {
             throw;
-        }*/
+        }
     }
 
     function withdrawAgreement(address _partner) {
