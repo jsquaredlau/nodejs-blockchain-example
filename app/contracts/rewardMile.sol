@@ -56,22 +56,23 @@ contract RewardMile {
     }
 
     function acceptAgreement(address _partner, address _partnerVaultLocation, uint256 _partnerRewardAllocation) {
-        bool isPartner = false;
+        /*bool isPartner = false;
         for(uint256 i = 0; i < partners.length; i++){
             if (partners[i] == _partner) {
                 isPartner = true;
                 break;
             }
-        }
+        }*/
 
-        if (isPartner){
-            partnerDetails[_partner] = BusinessDetails({exists: true, agreed: true, rewardAllocation: _partnerRewardAllocation, vault: Vault(_partnerVaultLocation)});
-            if (agreementValid()) {
-                AgreementValid('SUCCESS');
-            }
-        } else {
-            throw;
+        /*if (isPartner){*/
+        partners.push(_partner);
+        partnerDetails[_partner] = BusinessDetails({exists: true, agreed: true, rewardAllocation: _partnerRewardAllocation, vault: Vault(_partnerVaultLocation)});
+        if (agreementValid()) {
+            AgreementValid('SUCCESS');
         }
+        /*} else {
+            throw;
+        }*/
     }
 
     function withdrawAgreement(address _partner) {
