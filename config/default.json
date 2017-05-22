@@ -17,5 +17,8 @@
     },
     "Partner": {
         "apiUrl": "http://localhost:3001"
+    },
+    "Self": {
+        "apiUrl": "http://localhost:3000"
     }
 }

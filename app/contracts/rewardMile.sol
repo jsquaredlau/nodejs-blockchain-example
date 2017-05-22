@@ -34,6 +34,7 @@ contract RewardMile {
     event TxReceived(string status, address indexed fromBusiness, address indexed fromCustomer, string customerID);
     event RewardDistributed(string status, string customerRewarded);
     event ContractTerminated(string status);
+    event Debug(string status, address indexed businessA, bool businessAStatus, address indexed businessB, bool businessBStatus, address indexed businessC, bool businessCStatus);
 
     function RewardMile(address _owner, address[] _partners, uint256 _ownerRewardAllocation, address _ownerVault) {
         owner = _owner;
@@ -49,10 +50,20 @@ contract RewardMile {
     function processTx(address _sendingBusiness, address _sendingCustomer, string _customerID) {
         markTx(_sendingBusiness, _sendingCustomer, _customerID);
         if (checkRewardEligibility(_customerID)) {
+            checkDebug(_customerID);
             distributeReward(_customerID);
             clearRewardHistory(_customerID);
         }
         TxReceived('SUCCESS', _sendingBusiness, _sendingCustomer, _customerID);
+    }
+
+    function checkDebug(string _customerID) {
+        bool isEligible = true;
+        CustomerActivity ca = txLog[_customerID];
+        Debug('SUCCESS', partners[0], ca.patronage[partners[0]].madePurchase, partners[1], ca.patronage[partners[1]].madePurchase, partners[2], ca.patronage[partners[2]].madePurchase);
+        for (uint256 i = 0; i < partners.length; i++) {
+            Tally t = ca.patronage[partners[i]];
+        }
     }
 
     function acceptAgreement(address _partner, address _partnerVaultLocation, uint256 _partnerRewardAllocation) {
@@ -129,7 +140,7 @@ contract RewardMile {
         CustomerActivity ca = txLog[_customerID];
         for (uint256 i = 0; i < partners.length; i++) {
             Tally t = ca.patronage[partners[i]];
-            if (t.madePurchase != true) {
+            if (t.madePurchase == false) {
                 isEligible = false;
                 break;
             }

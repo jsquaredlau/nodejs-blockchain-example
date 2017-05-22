@@ -89,11 +89,11 @@ function sendTxToContract(business: string, customerAddress: string, points: num
             }
         });
         if (business === 'Grids Hostel') {
-            contractInstance.processTx(web3.eth.accounts[0], customerAddress, fbId);
+            contractInstance.processTx(web3.eth.accounts[0], customerAddress, fbId, { gas: 2000000 });
         } else if (business === 'Otaru Cafe') {
-            contractInstance.processTx(web3.eth.accounts[1], customerAddress, fbId);
+            contractInstance.processTx(web3.eth.accounts[1], customerAddress, fbId, { gas: 2000000 });
         } else if (business === 'Muffin Collective') {
-            contractInstance.processTx(web3.eth.accounts[2], customerAddress, fbId);
+            contractInstance.processTx(web3.eth.accounts[2], customerAddress, fbId, { gas: 2000000 });
         }
     }
 }

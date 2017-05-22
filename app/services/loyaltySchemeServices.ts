@@ -243,11 +243,14 @@ export function parseCollaborationAcceptance(business: string, schemeName: strin
                     });
 
                     if (business === 'Grids Hostel') {
-                        resolve(contractInstance.acceptAgreement(web3.eth.accounts[0], acceptanceInfo.vaultAddress, acceptanceInfo.requiredInputs.rewardAllocation));
+                        console.log(acceptanceInfo.requiredInputs.vaultAddress);
+                        resolve(contractInstance.acceptAgreement(web3.eth.accounts[0], acceptanceInfo.requiredInputs.vaultAddress, acceptanceInfo.requiredInputs.rewardAllocation));
                     } else if (business === 'Otaru Cafe') {
-                        resolve(contractInstance.acceptAgreement(web3.eth.accounts[1], acceptanceInfo.vaultAddress, acceptanceInfo.requiredInputs.rewardAllocation));
+                        console.log(acceptanceInfo.requiredInputs.vaultAddress);
+                        resolve(contractInstance.acceptAgreement(web3.eth.accounts[1], acceptanceInfo.requiredInputs.vaultAddress, acceptanceInfo.requiredInputs.rewardAllocation));
                     } else {
-                        resolve(contractInstance.acceptAgreement(web3.eth.accounts[2], acceptanceInfo.vaultAddress, acceptanceInfo.requiredInputs.rewardAllocation));
+                        console.log(acceptanceInfo.requiredInputs.vaultAddress);
+                        resolve(contractInstance.acceptAgreement(web3.eth.accounts[2], acceptanceInfo.requiredInputs.vaultAddress, acceptanceInfo.requiredInputs.rewardAllocation));
                     }
                 })
                 .fail((error) => {
@@ -337,8 +340,19 @@ function subscribeToRewardMileEvents(business: string, schemeName: string, contr
             console.log(error);
         } else {
             console.log('### [LAAS API] REWARD MILE TX RECEIVED EVENT ###');
-            console.log('TX from business [ ' + result.args._sendingBusiness + ' ] from customer [ ' + result.args_customerID + ' ]')
+            console.log('TX from business [ ' + result.args.fromBusiness + ' ] from customer [ ' + result.args.customerID + ' ]')
             console.log()
+        }
+    });
+
+    const debugEvent = contractInstance.Debug()
+    debugEvent.watch((error, result) => {
+        if (error) {
+            console.log(error);
+        } else {
+            console.log('###################################');
+            console.log(result.args);
+            console.log('###################################');
         }
     });
 
@@ -348,7 +362,7 @@ function subscribeToRewardMileEvents(business: string, schemeName: string, contr
             console.log(error);
         } else {
             console.log('### [LAAS API] REWARD MILE DISTRIBUTION EVENT ###');
-            console.log('Reward given to customer [ ' + result.args._customerID + ' ]');
+            console.log('Reward given to customer [ ' + result.args.customerID + ' ]');
             console.log()
             console.log(result.args);
         }
@@ -715,7 +729,7 @@ export class RewardMileContract extends ContractPaper {
             }
         }
 
-        console.log(partnerAddresses);
+        console.log(details.vaultAddress);
 
         return Q.Promise((resolve, reject, notify) => {
             resolve(this.contract.new(
@@ -797,7 +811,7 @@ export class RewardMileContract extends ContractPaper {
                                         requestUrl = self.apiUrl;
                                     }
                                 }
-
+                                console.log(requestUrl + '/api/v1/business/collaboration/request/' + details.partners[i]);
                                 request({
                                     url: requestUrl + '/api/v1/business/collaboration/request/' + details.partners[i],
                                     method: 'POST',
