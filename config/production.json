@@ -16,10 +16,10 @@
         }
     },
     "Partner": {
-        "apiUrl": "http://localhost:3001"
+        "apiUrl": "http://jsquared.gq:3001"
     },
     "Self": {
-        "apiUrl": "http://localhost:3000"
+        "apiUrl": "http://jsquared.ga:3000"
     }
 
 }
