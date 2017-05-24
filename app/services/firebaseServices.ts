@@ -356,10 +356,8 @@ export function queryFxSchemes(business: string, fbId: string): Q.Promise<{}> {
                 for (const membership in membershipSnapshot.val()) {
                     memberships.push(membership);
                 }
-                console.log('Memberships is : ' + memberships);
                 database.ref('/schemes/' + business).once('value')
                     .then((fxSnapshot) => {
-                        console.log(JSON.stringify(fxSnapshot.val()));
                         for (const scheme in fxSnapshot.val()) {
                             if (fxSnapshot.val()[scheme].contractType === 'fx' && fxSnapshot.val()[scheme].status !== 'deactivated') {
                                 if (business === fxSnapshot.val()[scheme].owner) {
