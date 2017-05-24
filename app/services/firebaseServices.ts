@@ -361,7 +361,7 @@ export function queryFxSchemes(business: string, fbId: string): Q.Promise<{}> {
                     .then((fxSnapshot) => {
                         console.log(JSON.stringify(fxSnapshot.val()));
                         for (const scheme in fxSnapshot.val()) {
-                            if (fxSnapshot.val()[scheme].contractType === 'fx') {
+                            if (fxSnapshot.val()[scheme].contractType === 'fx' && fxSnapshot.val()[scheme].status !== 'deactivated') {
                                 if (business === fxSnapshot.val()[scheme].owner) {
                                     // if (fxSnapshot.val()[scheme].status !== 'pending' && memberships.indexOf(fxSnapshot.val()[scheme].requestedPartner) > -1) {
                                     fxPartners.push({
