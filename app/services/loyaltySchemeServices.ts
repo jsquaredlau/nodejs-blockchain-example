@@ -634,8 +634,24 @@ export class FxContract extends ContractPaper {
                                     voidingEvent.stopWatching();
                                 }
                             });
+
+                            let requestUrl;
+                            if (details.owner === 'Grids Hostel') {
+                                if (details.requestedPartner === 'Grids Hostel') {
+                                    requestUrl = self.apiUrl;
+                                } else {
+                                    requestUrl = partner.apiUrl;
+                                }
+                            } else {
+                                if (details.requestedPartner === 'Grids Hostel') {
+                                    requestUrl = partner.apiUrl;
+                                } else {
+                                    requestUrl = self.apiUrl;
+                                }
+                            }
+
                             request({
-                                url: partner.apiUrl + '/api/v1/business/collaboration/request/' + details.requestedPartner,
+                                url: requestUrl + '/api/v1/business/collaboration/request/' + details.requestedPartner,
                                 method: 'POST',
                                 headers: {
                                     'Content-Type': 'application/json',
