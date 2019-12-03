@@ -1,3 +1,15 @@
+# Ethereum Backend for a Digital Loyalty System | NodeJS, Express, Solidity, TypeScript
+
+This code powered the backend for a blockchain based digital loyalty system built as proof-of-concept to support my thesis topic.
+
+The server exposes endpoints for mobile applications and makes calls smart contracts deployed on a private ethereum to execute business logic.
+
+Technology:
+- Server : NodeJS and TypeScript
+- Routing : Express
+- Smart Contracts : Solidity
+- Task runner : Grunt.
+
 # Ethereum LaaS Server
 
 ## Setup
